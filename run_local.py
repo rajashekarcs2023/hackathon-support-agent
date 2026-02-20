@@ -19,7 +19,7 @@ def main() -> None:
         if user_input.lower() in ("quit", "exit", "q"):
             print("Bye.")
             break
-        response = qa.answer(user_input)
+        response = qa.answer(user_input, session_id="local")
         print(f"Bot: {response}\n")
 
 
