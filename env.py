@@ -61,7 +61,7 @@ class _Config:
 
     @property
     def LOG_LEVEL(self) -> str:
-        return (os.getenv("LOG_LEVEL", "") or "INFO").strip().upper()
+        return (os.getenv("LOG_LEVEL", "") or "ERROR").strip().upper()
 
 
 config = _Config()
