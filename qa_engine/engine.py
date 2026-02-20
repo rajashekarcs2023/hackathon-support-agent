@@ -82,7 +82,9 @@ _TOOLS = [
             "name": "retrieve_docs",
             "description": (
                 "Search the knowledge base to find an answer to the user's question. "
-                "Use this when you need factual information about the hackathon."
+                "Use this for any factual question about the hackathon or sponsors "
+                "(e.g. prizes, internships, careers, contact info, schedule). "
+                "Call this first before concluding the KB has no answer."
             ),
             "parameters": {
                 "type": "object",
@@ -102,7 +104,10 @@ _TOOLS = [
             "name": "offer_escalation",
             "description": (
                 "Offer to escalate to a human organizer. Use this when: "
-                "(1) you cannot answer from available knowledge, OR "
+                "(1) you cannot answer from the knowledge base (e.g. retrieve_docs "
+                "reported the info is not there, or the question is in scope but the "
+                "KB has no relevant content) — do NOT suggest 'check their website' or "
+                "'contact the sponsor'; escalate so an organizer can help, OR "
                 "(2) the participant is in distress, upset, or reporting an urgent "
                 "situation (e.g. theft, injury, harassment, lost item, medical issue, "
                 "safety concern) — even if the topic is not a typical Q&A question, OR "
@@ -178,9 +183,14 @@ class QAEngine:
             f"human attention), call offer_escalation — do NOT redirect them away. "
             f"For genuinely off-topic questions unrelated to the event or participant "
             f"wellbeing, politely redirect to hackathon topics. "
-            f"Use retrieve_docs to look up factual information, offer_escalation when "
-            f"you cannot answer or when a participant needs human help, and "
-            f"confirm_escalation when the user agrees to escalate."
+            f"CRITICAL: For any question that could be hackathon- or sponsor-related "
+            f"(including prizes, sponsors, internships, careers, or contact with sponsors), "
+            f"call retrieve_docs first to check the knowledge base. Do not answer from "
+            f"general knowledge — if the knowledge base does not contain the answer, "
+            f"that counts as 'cannot answer': call offer_escalation. Do not suggest the "
+            f"user go elsewhere (e.g. 'check the careers page', 'contact the sponsor') "
+            f"instead of escalating; offer escalation so an organizer can help. "
+            f"Use confirm_escalation when the user agrees to escalate."
         )
         if ctx.pending_escalation:
             base += (
