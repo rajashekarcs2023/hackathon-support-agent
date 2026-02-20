@@ -7,7 +7,7 @@ from qa_engine.engine import QAEngine
 def main() -> None:
     require_env()
     qa = QAEngine(openai_api_key=config.OPENAI_API_KEY)
-    print("Local chatbot (subject: the sun). Type 'quit' or 'exit' to stop.\n")
+    print("Hackathon Q&A bot. Type 'quit' or 'exit' to stop.\n")
     while True:
         try:
             user_input = input("You: ").strip()

@@ -24,8 +24,11 @@ satisfies the contract by returning a message (e.g. a fallback).
 
 from openai import OpenAI
 
-# Subject matter expertise (single scope for now)
-SUBJECT_MATTER = "the sun"
+# Scope: hackathon Q&A bot
+SCOPE_DESCRIPTION = (
+    "this hackathon: event info, schedule, rules, logistics, prizes, "
+    "sponsors, workshops, judging, and other hackathon-related questions"
+)
 
 DEFAULT_FALLBACK = "Unable to answer your question at this time"
 
@@ -56,8 +59,7 @@ class QAEngine:
             messages=[
                 {
                     "role": "system",
-                    "content": f"""You are a helpful assistant who only answers questions about {SUBJECT_MATTER}.
-If the user asks about any other topics, politely decline.""",
+                    "content": f"""You are a helpful hackathon Q&A assistant. Answer questions about {SCOPE_DESCRIPTION}. If the user asks about unrelated topics, politely redirect them to hackathon-related questions.""",
                 },
                 {"role": "user", "content": message},
             ],

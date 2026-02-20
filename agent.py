@@ -13,8 +13,11 @@ from uagents_core.contrib.protocols.chat import (
 
 from env import config, require_env
 
-# Subject matter expertise
-subject_matter = "the sun"
+# Scope: hackathon Q&A bot
+scope_description = (
+    "this hackathon: event info, schedule, rules, logistics, prizes, "
+    "sponsors, workshops, judging, and other hackathon-related questions"
+)
 
 client = OpenAI(api_key=config.OPENAI_API_KEY)
 
@@ -49,8 +52,8 @@ async def handle_message(ctx: Context, sender: str, msg: ChatMessage):
                 {
                     "role": "system",
                     "content": f"""
-         You are a helpful assistant who only answers questions about {subject_matter}.
-         If the user asks about any other topics, politely decline.
+         You are a helpful hackathon Q&A assistant. Answer questions about {scope_description}.
+         If the user asks about unrelated topics, politely redirect them to hackathon-related questions.
                 """,
                 },
                 {"role": "user", "content": text},
