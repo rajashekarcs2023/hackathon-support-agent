@@ -1,7 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 
-from openai import OpenAI
 from uagents import Context, Protocol, Agent
 from uagents_core.contrib.protocols.chat import (
     ChatAcknowledgement,
@@ -12,14 +11,9 @@ from uagents_core.contrib.protocols.chat import (
 )
 
 from env import config, require_env
+from qa_engine.engine import QAEngine
 
-# Scope: hackathon Q&A bot
-scope_description = (
-    "this hackathon: event info, schedule, rules, logistics, prizes, "
-    "sponsors, workshops, judging, and other hackathon-related questions"
-)
-
-client = OpenAI(api_key=config.OPENAI_API_KEY)
+engine = QAEngine(openai_api_key=config.OPENAI_API_KEY)
 
 agent = Agent(
     name="ASI-agent",
@@ -46,28 +40,14 @@ async def handle_message(ctx: Context, sender: str, msg: ChatMessage):
 
     response = "Unable to answer your question at this time"
     try:
-        r = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "system",
-                    "content": f"""
-         You are a helpful hackathon Q&A assistant. Answer questions about {scope_description}.
-         If the user asks about unrelated topics, politely redirect them to hackathon-related questions.
-                """,
-                },
-                {"role": "user", "content": text},
-            ],
-            max_tokens=2048,
-        )
-        response = str(r.choices[0].message.content)
+        response = engine.answer(text, session_id=sender)
     except Exception:
-        ctx.logger.exception("Error querying model")
+        ctx.logger.exception("Error querying QA engine")
 
     await ctx.send(
         sender,
         ChatMessage(
-            timestamp=datetime.now(datetime.timezone.utc),
+            timestamp=datetime.now(tz=timezone.utc),
             msg_id=uuid4(),
             content=[
                 TextContent(type="text", text=response),
