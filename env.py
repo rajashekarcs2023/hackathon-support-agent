@@ -5,6 +5,10 @@ so failures happen at launch instead of on first API call.
 """
 import os
 import sys
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Single source of truth: required for the app to run end-to-end.
 # Keep in sync with .env.example.
