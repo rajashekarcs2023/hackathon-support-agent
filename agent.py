@@ -58,7 +58,7 @@ async def handle_message(ctx: Context, sender: str, msg: ChatMessage):
         ctx.logger.exception('Error querying model')
 
     await ctx.send(sender, ChatMessage(
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(datetime.timezone.utc),
         msg_id=uuid4(),
         content=[
             TextContent(type="text", text=response),
