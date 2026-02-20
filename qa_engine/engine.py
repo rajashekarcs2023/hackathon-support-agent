@@ -16,8 +16,10 @@ Interface contract
   "I've escalated this; someone will follow up").
 """
 
+import functools
 import json
 import logging
+import time
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -32,6 +34,38 @@ from qa_engine.store import (
 )
 
 logger = logging.getLogger(__name__)
+
+# Debug: truncate long strings in logs
+def _truncate(s: str, max_len: int = 400) -> str:
+    if not isinstance(s, str):
+        s = str(s)
+    return s[:max_len] + "..." if len(s) > max_len else s
+
+
+def log_tool_call(fn):
+    """Decorator: log tool name, sanitized args, result, and duration for every tool call."""
+    @functools.wraps(fn)
+    def wrapper(self, *args, **kwargs):
+        name = fn.__name__
+        # Don't log large lists (e.g. conversation messages)
+        def safe(v):
+            if isinstance(v, list) and len(v) > 2:
+                return f"<list of {len(v)} items>"
+            return _truncate(repr(v), 200)
+        safe_args = [safe(a) for a in args]
+        safe_kw = {k: safe(v) for k, v in kwargs.items()}
+        logger.info("Tool call: %s args=%s kwargs=%s", name, safe_args, safe_kw)
+        start = time.perf_counter()
+        try:
+            result = fn(self, *args, **kwargs)
+            elapsed = time.perf_counter() - start
+            logger.info("Tool %s returned in %.3fs: %s", name, elapsed, _truncate(result))
+            return result
+        except Exception as e:
+            elapsed = time.perf_counter() - start
+            logger.exception("Tool %s failed after %.3fs: %s", name, elapsed, e)
+            raise
+    return wrapper
 
 # Scope: hackathon Q&A bot
 SCOPE_DESCRIPTION = (
@@ -164,8 +198,10 @@ class QAEngine:
         ]
 
         reply = DEFAULT_FALLBACK
+        logger.info("ReAct loop starting for user message: %s", _truncate(message, 120))
 
-        for _ in range(3):
+        for step in range(3):
+            logger.info("ReAct step %d: calling model (messages=%d)", step + 1, len(messages))
             response = self._client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=messages,
@@ -177,8 +213,11 @@ class QAEngine:
 
             if not msg.tool_calls:
                 reply = msg.content or DEFAULT_FALLBACK
+                logger.info("ReAct step %d: model returned final reply (no tool calls)", step + 1)
                 break
 
+            tool_names = [tc.function.name for tc in msg.tool_calls]
+            logger.info("ReAct step %d: model requested tools: %s", step + 1, tool_names)
             messages.append(msg)
 
             for tool_call in msg.tool_calls:
@@ -203,6 +242,11 @@ class QAEngine:
                     "content": result,
                 })
 
+        if not msg.tool_calls:
+            logger.info("ReAct loop finished with reply: %s", _truncate(reply, 150))
+        else:
+            logger.warning("ReAct loop hit max steps (3); using last reply as fallback")
+
         ctx.history.append({"role": "assistant", "content": reply})
         ctx.history = ctx.history[-HISTORY_LIMIT:]
 
@@ -213,6 +257,7 @@ class QAEngine:
         with open(knowledge_path) as f:
             return json.load(f)
 
+    @log_tool_call
     def _tool_retrieve_docs(self, query: str, messages: list[dict]) -> str:
         knowledge = self._get_knowledge()
         knowledge_text = json.dumps(knowledge, indent=2)
@@ -243,9 +288,11 @@ class QAEngine:
         )
         return response.choices[0].message.content or DEFAULT_FALLBACK
 
+    @log_tool_call
     def _tool_offer_escalation(self) -> str:
         return "I couldn't find a confident answer to your question. Would you like me to escalate this to a human organizer who can help you directly?"
 
+    @log_tool_call
     def _tool_confirm_escalation(self) -> str:
         logger.info("Escalation confirmed by user.")
         return "I've escalated your question to the hackathon organizers. Someone will follow up with you shortly!"
