@@ -1,4 +1,4 @@
-"""Discord webhook escalation channel."""
+"""Discord webhook wrapper."""
 
 from discord_webhook import DiscordWebhook
 
