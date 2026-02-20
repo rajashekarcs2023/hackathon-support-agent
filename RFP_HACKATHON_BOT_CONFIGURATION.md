@@ -59,21 +59,20 @@ A core requirement is handling the case when the bot **cannot answer** a questio
 
 ### 2.2 Escalation Method We Need From You
 
-We need you to specify **how** you want escalated questions to reach your team. One approach we have already implemented and used successfully is:
+We **strongly recommend Discord** for the "ask a question" / escalation path. Our implemented flow works as follows:
 
-- **Discord:** We create a new thread in a designated channel with the participant’s question (and any relevant context), then send the participant a **link to that thread** so they can follow the conversation and get a direct response from your organizers.
+- **Discord (recommended):** We create a new thread in a designated channel with the participant’s question (and any relevant context), then send the participant a **link to that thread** so they can follow the conversation and get a direct response from your organizers. This has been used successfully at past events.
 
-We understand that not every hackathon uses Discord. Other options are possible, for example:
+Other options are possible if your event does not use Discord:
 
 - **Slack:** e.g. post to a channel or create a thread and provide a link to the participant.
-- **Email:** e.g. send the question to an organizers’ inbox and notify the participant that someone will follow up.
-- **Other:** If you use another platform (e.g. Discord, Slack, email, or a ticketing system), tell us what you prefer and we can discuss integration.
+- **Other:** If you use another platform (e.g. Discord, Slack, or a ticketing system), tell us what you prefer and we can discuss integration.
 
 In your response, please state:
 
-1. Which platform you use for organizer communication (e.g. Discord, Slack, email).
-2. How you would like escalated questions to appear (e.g. thread + link, channel message, email).
-3. Any constraints (e.g. specific channel, role to ping, email address).
+1. Which platform you use for organizer communication (e.g. Discord, Slack).
+2. How you would like escalated questions to appear (e.g. thread + link, channel message).
+3. Any constraints (e.g. specific channel, role to ping).
 
 We will use this to configure the escalation path for your event.
 
@@ -84,6 +83,6 @@ We will use this to configure the escalation path for your event.
 | Item                      | Your action                                                                                                                                                    |
 | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Hackathon information** | Provide a single document (PDF, Google Doc, etc.) containing all event info listed in Section 1.1. Format is flexible; we will parse it.                       |
-| **Escalation method**     | Tell us how you want unanswered or urgent questions escalated (e.g. Discord thread + link, Slack, email, or other), and any platform-specific details we need. |
+| **Escalation method**     | Tell us how you want unanswered or urgent questions escalated (we recommend Discord thread + link; Slack or other options available), and any platform-specific details we need. |
 
 If you have questions about this request or need clarification on any section, please reach out. We will use your responses to configure the bot and escalation flow for your hackathon.
