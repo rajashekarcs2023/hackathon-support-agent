@@ -42,7 +42,15 @@ class QAEngine:
     def __init__(self, openai_api_key: str):
         self._client = OpenAI(api_key=openai_api_key)
 
-    def answer(self, question: str) -> str:
+    def answer(self, message: str) -> str:
+        """Process a user message and return a response.
+
+        Implements the engine contract: one message in, one message out. The
+        caller can always use the return value as the reply to show or send
+        (e.g. to the user in a terminal or over chat). Escalation, when
+        configured, is handled inside this flow and does not change the
+        guarantee that a string is returned.
+        """
         r = self._client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
@@ -51,7 +59,7 @@ class QAEngine:
                     "content": f"""You are a helpful assistant who only answers questions about {SUBJECT_MATTER}.
 If the user asks about any other topics, politely decline.""",
                 },
-                {"role": "user", "content": question},
+                {"role": "user", "content": message},
             ],
             max_tokens=2048,
         )
