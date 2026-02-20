@@ -18,6 +18,9 @@ Interface contract
 
 import json
 import logging
+from datetime import datetime
+from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from openai import OpenAI
 
@@ -64,8 +67,20 @@ _TOOLS = [
         "function": {
             "name": "offer_escalation",
             "description": (
-                "Offer to escalate the question to a human organizer when you cannot "
-                "answer it from available knowledge."
+                "Offer to escalate to a human organizer. Use this when: "
+                "(1) you cannot answer from available knowledge, OR "
+                "(2) the participant is in distress, upset, or reporting an urgent "
+                "situation (e.g. theft, injury, harassment, lost item, medical issue, "
+                "safety concern) — even if the topic is not a typical Q&A question, OR "
+                "(3) the participant needs real-time or on-the-ground information that "
+                "the static knowledge base cannot reliably provide (e.g. why food is "
+                "late today, where an organizer currently is, live status of an "
+                "event). First answer from the knowledge base when the question is "
+                "about scheduled meal times (when is food, what time is lunch, etc.); "
+                "only escalate for live/operational issues (e.g. 'food still hasn't "
+                "arrived', 'I didn't get food'). Never tell the participant to 'ask a "
+                "volunteer' or 'check on-site' — escalate instead so an organizer can "
+                "follow up directly."
             ),
             "parameters": {
                 "type": "object",
@@ -116,12 +131,22 @@ class QAEngine:
         return reply
 
     def _build_system_prompt(self, ctx: ConversationContext) -> str:
+        now = datetime.now(tz=ZoneInfo("America/Los_Angeles"))
+        current_time = now.strftime("%A, %B %-d, %Y at %-I:%M %p %Z")
         base = (
-            f"You are a helpful hackathon Q&A assistant. Answer questions about "
-            f"{SCOPE_DESCRIPTION}. If the user asks about unrelated topics, politely "
-            f"redirect them to hackathon-related questions. "
-            f"Use retrieve_docs to look up information, offer_escalation when you "
-            f"cannot answer, and confirm_escalation when the user agrees to escalate."
+            f"You are a helpful hackathon Q&A assistant. "
+            f"The current date and time is {current_time}. "
+            f"Use this when answering time-sensitive questions — for example, if a meal "
+            f"or event is already in the past, say so rather than presenting it as upcoming. "
+            f"Answer questions about {SCOPE_DESCRIPTION}. "
+            f"If a participant is in distress, upset, or reporting an urgent situation "
+            f"(theft, injury, harassment, safety concern, or anything requiring immediate "
+            f"human attention), call offer_escalation — do NOT redirect them away. "
+            f"For genuinely off-topic questions unrelated to the event or participant "
+            f"wellbeing, politely redirect to hackathon topics. "
+            f"Use retrieve_docs to look up factual information, offer_escalation when "
+            f"you cannot answer or when a participant needs human help, and "
+            f"confirm_escalation when the user agrees to escalate."
         )
         if ctx.pending_escalation:
             base += (
@@ -183,15 +208,33 @@ class QAEngine:
 
         return reply
 
+    def _get_knowledge(self) -> dict:
+        knowledge_path = Path(__file__).parent.parent / "hackathonknowledge.json"
+        with open(knowledge_path) as f:
+            return json.load(f)
+
     def _tool_retrieve_docs(self, query: str, messages: list[dict]) -> str:
+        knowledge = self._get_knowledge()
+        knowledge_text = json.dumps(knowledge, indent=2)
+        now = datetime.now(tz=ZoneInfo("America/Los_Angeles"))
+        current_time = now.strftime("%A, %B %-d, %Y at %-I:%M %p %Z")
         response = self._client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {
                     "role": "system",
                     "content": (
-                        f"You are a knowledge base for a hackathon. Answer the following "
-                        f"query about {SCOPE_DESCRIPTION}. If you don't know, say so clearly."
+                        "You are a knowledge base assistant for a hackathon. "
+                        "Answer the following query using ONLY the information provided "
+                        "below. Each key includes a 'semantic_description' that explains "
+                        "what it covers — use those descriptions to find the relevant section. "
+                        "Current date and time (use for time-sensitive answers): "
+                        f"{current_time}. "
+                        "When answering about meals or schedule, say whether a time has "
+                        "already passed or is upcoming based on the current time. "
+                        "If the answer is not present in the knowledge base, say so clearly "
+                        "and do not invent information.\n\n"
+                        f"HACKATHON KNOWLEDGE BASE:\n{knowledge_text}"
                     ),
                 },
                 {"role": "user", "content": query},

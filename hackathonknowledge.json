@@ -1,0 +1,520 @@
+{
+  "event_identity": {
+    "semantic_description": "Use this section to answer questions about what the event is called, its tagline, which edition it is, and where to find the official website.",
+    "name": "LA Hacks 2025",
+    "tagline": "Build the Future",
+    "edition": "8th Annual",
+    "website": "https://lahacks.com"
+  },
+  "start_datetime": {
+    "semantic_description": "Use this section to answer questions about when the hackathon starts, the opening date and time, or when participants should arrive.",
+    "iso8601": "2025-04-18T18:00:00-07:00",
+    "timezone": "America/Los_Angeles",
+    "display": "Friday, April 18, 2025 at 6:00 PM PDT"
+  },
+  "end_datetime": {
+    "semantic_description": "Use this section to answer questions about when the hackathon ends, the closing date and time, or the duration of the event.",
+    "iso8601": "2025-04-20T17:00:00-07:00",
+    "timezone": "America/Los_Angeles",
+    "display": "Sunday, April 20, 2025 at 5:00 PM PDT"
+  },
+  "hacking_start_datetime": {
+    "semantic_description": "Use this section to answer questions about when hacking officially begins, when participants may start coding, or when the build period opens.",
+    "iso8601": "2025-04-18T21:00:00-07:00",
+    "timezone": "America/Los_Angeles",
+    "display": "Friday, April 18, 2025 at 9:00 PM PDT",
+    "note": "Hacking begins after the opening ceremony concludes."
+  },
+  "submission_deadline": {
+    "semantic_description": "Use this section to answer questions about when projects must be submitted, the Devpost deadline, or when hacking ends.",
+    "iso8601": "2025-04-20T09:00:00-07:00",
+    "timezone": "America/Los_Angeles",
+    "display": "Sunday, April 20, 2025 at 9:00 AM PDT",
+    "platform": "Devpost",
+    "note": "All project submissions must be finalized on Devpost before this time. Late submissions will not be accepted."
+  },
+  "check_in": {
+    "semantic_description": "Use this section to answer questions about where and when to check in, what to bring for check-in, or the registration process upon arrival.",
+    "start": "Friday, April 18, 2025 at 4:00 PM PDT",
+    "end": "Friday, April 18, 2025 at 7:00 PM PDT",
+    "location": "Ackerman Grand Ballroom Lobby, UCLA",
+    "what_to_bring": [
+      "Valid student ID or government-issued photo ID",
+      "Confirmation email or QR code from registration",
+      "Laptop and charger",
+      "Sleeping bag or blanket (optional, for overnight stays)"
+    ]
+  },
+  "venue": {
+    "semantic_description": "Use this section to answer questions about where the hackathon is held, the address, specific rooms or floors, or parking information.",
+    "building": "Ackerman Union & Pauley Pavilion",
+    "address": "308 Westwood Plaza, Los Angeles, CA 90095",
+    "campus": "UCLA (University of California, Los Angeles)",
+    "floors_and_rooms": {
+      "main_hacking_floor": "Ackerman Grand Ballroom, Level 1",
+      "workshop_room": "Ackerman Rooms 3517-3519, Level 3",
+      "sponsor_expo": "Bruin Plaza (outdoor)",
+      "sleeping_area": "Pauley Pavilion Floor"
+    },
+    "parking": "Structure 8 (Lot 8) on Westwood Plaza; flat $12/day weekend rate. Street parking also available on Westwood Blvd."
+  },
+  "schedule": {
+    "semantic_description": "Use this section to answer questions about the event schedule, what happens at a specific time, or the order of activities throughout the hackathon.",
+    "items": [
+      {
+        "time": "Friday, April 18, 2025 at 4:00 PM",
+        "duration_minutes": 180,
+        "title": "Check-In & Registration",
+        "location": "Ackerman Grand Ballroom Lobby",
+        "description": "Pick up your badge, swag bag, and wristband."
+      },
+      {
+        "time": "Friday, April 18, 2025 at 6:30 PM",
+        "duration_minutes": 30,
+        "title": "Dinner",
+        "location": "Ackerman Grand Ballroom",
+        "description": "Opening dinner — burritos and quesadillas from Chronic Tacos."
+      },
+      {
+        "time": "Friday, April 18, 2025 at 7:00 PM",
+        "duration_minutes": 120,
+        "title": "Opening Ceremony",
+        "location": "Ackerman Grand Ballroom",
+        "description": "Welcome remarks, sponsor spotlights, track announcements, and keynote speaker."
+      },
+      {
+        "time": "Friday, April 18, 2025 at 9:00 PM",
+        "duration_minutes": null,
+        "title": "Hacking Begins",
+        "location": "Ackerman Grand Ballroom & overflow areas",
+        "description": "Official start of the 36-hour hacking period."
+      },
+      {
+        "time": "Saturday, April 19, 2025 at 8:00 AM",
+        "duration_minutes": 60,
+        "title": "Breakfast",
+        "location": "Ackerman Grand Ballroom",
+        "description": "Bagels, pastries, fruit, and coffee."
+      },
+      {
+        "time": "Saturday, April 19, 2025 at 12:00 PM",
+        "duration_minutes": 60,
+        "title": "Lunch",
+        "location": "Ackerman Grand Ballroom",
+        "description": "Catered lunch — pizza from 800 Degrees."
+      },
+      {
+        "time": "Saturday, April 19, 2025 at 6:00 PM",
+        "duration_minutes": 60,
+        "title": "Dinner",
+        "location": "Ackerman Grand Ballroom",
+        "description": "Catered dinner — Korean BBQ bowls."
+      },
+      {
+        "time": "Saturday, April 19, 2025 at 11:00 PM",
+        "duration_minutes": 60,
+        "title": "Midnight Snack",
+        "location": "Ackerman Grand Ballroom",
+        "description": "Late-night ramen and boba."
+      },
+      {
+        "time": "Sunday, April 20, 2025 at 8:00 AM",
+        "duration_minutes": 60,
+        "title": "Breakfast",
+        "location": "Ackerman Grand Ballroom",
+        "description": "Breakfast burritos and coffee."
+      },
+      {
+        "time": "Sunday, April 20, 2025 at 9:00 AM",
+        "duration_minutes": null,
+        "title": "Hacking Ends / Submission Deadline",
+        "location": "Devpost (online)",
+        "description": "All projects must be submitted on Devpost by this time."
+      },
+      {
+        "time": "Sunday, April 20, 2025 at 10:00 AM",
+        "duration_minutes": 120,
+        "title": "Project Demos & Judging",
+        "location": "Ackerman Grand Ballroom",
+        "description": "Teams present demos at their tables; judges rotate through."
+      },
+      {
+        "time": "Sunday, April 20, 2025 at 1:00 PM",
+        "duration_minutes": 60,
+        "title": "Lunch",
+        "location": "Ackerman Grand Ballroom",
+        "description": "Final lunch — sandwiches and salads."
+      },
+      {
+        "time": "Sunday, April 20, 2025 at 3:00 PM",
+        "duration_minutes": 120,
+        "title": "Closing Ceremony & Awards",
+        "location": "Ackerman Grand Ballroom",
+        "description": "Prize announcements, sponsor awards, and closing remarks."
+      }
+    ]
+  },
+  "team_requirements": {
+    "semantic_description": "Use this section to answer questions about team size limits, whether solo participation is allowed, or how to register a team.",
+    "min_size": 1,
+    "max_size": 4,
+    "solo_allowed": true,
+    "notes": "All team members must be registered hackers. Teams must be finalized and registered on Devpost before submitting a project.",
+    "registration_portal": "https://lahacks.com/apply"
+  },
+  "eligibility": {
+    "semantic_description": "Use this section to answer questions about who is eligible to participate, age requirements, whether high school students can attend, or guest policies.",
+    "requirements": [
+      "Must be a currently enrolled college or university student",
+      "Must be at least 18 years old",
+      "International students with valid student visas are welcome",
+      "High school students are not eligible to compete but may attend as observers with a guest pass"
+    ],
+    "guest_policy": "Each registered hacker may bring one non-competing guest. Guests must sign in at the front desk and wear a guest badge at all times."
+  },
+  "tracks_and_themes": {
+    "semantic_description": "Use this section to answer questions about competition tracks, themes, or what types of projects are being built.",
+    "items": [
+      {
+        "name": "AI for Good",
+        "description": "Build AI-powered solutions that address social, environmental, or humanitarian challenges.",
+        "target_areas": ["healthcare", "education", "climate", "accessibility"]
+      },
+      {
+        "name": "FinTech",
+        "description": "Innovate in financial services, personal finance, banking, or economic empowerment.",
+        "target_areas": [
+          "payments",
+          "investing",
+          "lending",
+          "financial literacy"
+        ]
+      },
+      {
+        "name": "Web3 & Blockchain",
+        "description": "Create decentralized applications, smart contracts, or explore emerging blockchain use cases.",
+        "target_areas": ["DeFi", "NFTs", "DAOs", "identity"]
+      },
+      {
+        "name": "Health & Wellness",
+        "description": "Improve physical or mental health through technology.",
+        "target_areas": [
+          "mental health",
+          "fitness",
+          "medical diagnostics",
+          "telemedicine"
+        ]
+      },
+      {
+        "name": "Open Innovation",
+        "description": "Build anything — no theme restriction. Creativity and impact are the only requirements.",
+        "target_areas": ["any domain"]
+      }
+    ]
+  },
+  "prizes": {
+    "semantic_description": "Use this section to answer questions about prize amounts, what the winners receive, or how prizes are distributed across categories.",
+    "tiers": [
+      {
+        "tier": "Grand Prize",
+        "award": "$5,000 cash + hardware bundle (MacBook Pro M3)",
+        "description": "Awarded to the single best overall project across all tracks."
+      },
+      {
+        "tier": "Runner-Up",
+        "award": "$2,500 cash",
+        "description": "Awarded to the second-best overall project."
+      },
+      {
+        "tier": "Track Prize — AI for Good",
+        "award": "$1,000 cash + cloud credits",
+        "description": "Best project in the AI for Good track."
+      },
+      {
+        "tier": "Track Prize — FinTech",
+        "award": "$1,000 cash",
+        "description": "Best project in the FinTech track."
+      },
+      {
+        "tier": "Track Prize — Web3 & Blockchain",
+        "award": "$1,000 cash",
+        "description": "Best project in the Web3 & Blockchain track."
+      },
+      {
+        "tier": "Track Prize — Health & Wellness",
+        "award": "$1,000 cash",
+        "description": "Best project in the Health & Wellness track."
+      },
+      {
+        "tier": "Best First Hack",
+        "award": "$500 cash + swag",
+        "description": "Awarded to the best project from a team where all members are first-time hackathon participants."
+      },
+      {
+        "tier": "Sponsor Prize — Anthropic",
+        "award": "$500 in API credits + mentorship session",
+        "description": "Best use of the Claude API in a project."
+      },
+      {
+        "tier": "Sponsor Prize — Google Cloud",
+        "award": "$500 in GCP credits",
+        "description": "Best use of Google Cloud services."
+      }
+    ]
+  },
+  "judging_criteria": {
+    "semantic_description": "Use this section to answer questions about how projects are evaluated, what judges look for, or what scoring rubric is used.",
+    "criteria": [
+      {
+        "name": "Innovation",
+        "weight": "30%",
+        "description": "How original and creative is the idea? Does it address a real problem in a novel way?"
+      },
+      {
+        "name": "Technical Complexity",
+        "weight": "25%",
+        "description": "How technically challenging is the implementation? Does it demonstrate strong engineering?"
+      },
+      {
+        "name": "Impact",
+        "weight": "25%",
+        "description": "What is the potential real-world impact? Who benefits and how significantly?"
+      },
+      {
+        "name": "Presentation & Demo",
+        "weight": "20%",
+        "description": "How clearly is the project explained? Does the demo work and communicate the value effectively?"
+      }
+    ],
+    "judge_rotation": "Judges rotate to each team table during the 2-hour demo period. Each team presents for approximately 5 minutes."
+  },
+  "submission_requirements": {
+    "semantic_description": "Use this section to answer questions about what must be submitted for a project to be eligible, what the Devpost submission should include, or whether a GitHub link is required.",
+    "required": [
+      "Devpost project page (must be submitted before 9:00 AM Sunday)",
+      "Project title and description (what it does, how it was built)",
+      "Link to public GitHub repository with working code",
+      "2-minute demo video (uploaded to YouTube or Vimeo, unlisted is fine)",
+      "List of all team members (must match registered hackers)"
+    ],
+    "optional": [
+      "Slide deck (PDF or Google Slides link)",
+      "Link to live deployed demo"
+    ],
+    "platform": "Devpost — https://lahacks2025.devpost.com"
+  },
+  "workshops": {
+    "semantic_description": "Use this section to answer questions about workshops, tech talks, learning sessions, or what skills are being taught at the event.",
+    "items": [
+      {
+        "time": "Friday, April 18, 2025 at 8:00 PM",
+        "title": "Intro to Hackathons",
+        "host": "LA Hacks Organizers",
+        "location": "Ackerman Room 3517",
+        "description": "Tips for first-time hackers: how to pick an idea, form a team, and scope a project.",
+        "skill_level": "Beginner"
+      },
+      {
+        "time": "Saturday, April 19, 2025 at 10:00 AM",
+        "title": "Building with the Claude API",
+        "host": "Anthropic",
+        "location": "Ackerman Room 3517",
+        "description": "Hands-on intro to Claude's API: prompting techniques, tool use, and building agents.",
+        "skill_level": "Beginner / Intermediate"
+      },
+      {
+        "time": "Saturday, April 19, 2025 at 11:00 AM",
+        "title": "Deploying ML Models with Google Cloud",
+        "host": "Google Cloud",
+        "location": "Ackerman Room 3519",
+        "description": "Deploy a trained ML model as a REST API on Vertex AI in under 30 minutes.",
+        "skill_level": "Intermediate"
+      },
+      {
+        "time": "Saturday, April 19, 2025 at 1:00 PM",
+        "title": "Smart Contracts 101",
+        "host": "Ethereum Foundation",
+        "location": "Ackerman Room 3517",
+        "description": "Write, test, and deploy your first Solidity smart contract on a testnet.",
+        "skill_level": "Beginner / Intermediate"
+      },
+      {
+        "time": "Saturday, April 19, 2025 at 3:00 PM",
+        "title": "Product Design Sprint",
+        "host": "Figma",
+        "location": "Ackerman Room 3519",
+        "description": "Rapid prototyping with Figma: go from idea to clickable mockup in 60 minutes.",
+        "skill_level": "All levels"
+      }
+    ]
+  },
+  "sponsors": {
+    "semantic_description": "Use this section to answer questions about who is sponsoring the hackathon, sponsorship tiers, or what sponsors are offering to participants.",
+    "tiers": [
+      {
+        "tier": "Title Sponsor",
+        "companies": ["Google"],
+        "benefits_to_hackers": "Google Cloud credits ($300/team), dedicated mentors, prize category"
+      },
+      {
+        "tier": "Gold Sponsors",
+        "companies": ["Anthropic", "Figma"],
+        "benefits_to_hackers": "API credits, workshops, sponsored prize categories"
+      },
+      {
+        "tier": "Silver Sponsors",
+        "companies": ["Ethereum Foundation", "MongoDB", "Vercel"],
+        "benefits_to_hackers": "Free tier upgrades, stickers, swag"
+      },
+      {
+        "tier": "Bronze Sponsors",
+        "companies": ["1Password", "Notion", "Postman"],
+        "benefits_to_hackers": "Free Pro licenses for participants"
+      }
+    ]
+  },
+  "resources_and_apis": {
+    "semantic_description": "Use this section to answer questions about what tools, APIs, cloud credits, hardware, or SDKs are available for hackers to use.",
+    "items": [
+      {
+        "resource": "Google Cloud",
+        "details": "$300 in GCP credits per team. Activate at the Google Cloud booth in Bruin Plaza."
+      },
+      {
+        "resource": "Anthropic Claude API",
+        "details": "Free API credits for hackathon use. Visit the Anthropic booth or go to https://console.anthropic.com and use promo code LAHACKS2025."
+      },
+      {
+        "resource": "MongoDB Atlas",
+        "details": "Free M10 cluster for the duration of the hackathon. Sign up at https://mongodb.com/try."
+      },
+      {
+        "resource": "Vercel",
+        "details": "Free Pro plan for 6 months for all participants. Use the Vercel booth QR code to activate."
+      },
+      {
+        "resource": "Hardware Lab",
+        "details": "Raspberry Pis, Arduino kits, sensors, and cameras available to borrow. Located at Table H in the hacking floor. First-come, first-served."
+      }
+    ]
+  },
+  "meals_and_food": {
+    "semantic_description": "Use this section to answer questions about food, meals, when food is served, meal times, what time is lunch/dinner/breakfast, when is the next meal, whether a meal has already passed, what is being served, where to get food, or dietary accommodations. The schedule lists every meal with date, time, location, and menu.",
+    "schedule": [
+      {
+        "meal": "Opening Dinner",
+        "time": "Friday, April 18, 2025 at 6:30 PM",
+        "location": "Ackerman Grand Ballroom",
+        "menu": "Burritos and quesadillas (Chronic Tacos)",
+        "dietary_notes": "Vegetarian and vegan options available. Gluten-free tortillas on request."
+      },
+      {
+        "meal": "Saturday Breakfast",
+        "time": "Saturday, April 19, 2025 at 8:00 AM",
+        "location": "Ackerman Grand Ballroom",
+        "menu": "Bagels, pastries, fruit, coffee, tea",
+        "dietary_notes": "Gluten-free bagels available. Dairy-free milk alternatives provided."
+      },
+      {
+        "meal": "Saturday Lunch",
+        "time": "Saturday, April 19, 2025 at 12:00 PM",
+        "location": "Ackerman Grand Ballroom",
+        "menu": "Pizza (800 Degrees)",
+        "dietary_notes": "Vegetarian pizzas available. Gluten-free crust on request (limited supply)."
+      },
+      {
+        "meal": "Saturday Dinner",
+        "time": "Saturday, April 19, 2025 at 6:00 PM",
+        "location": "Ackerman Grand Ballroom",
+        "menu": "Korean BBQ bowls",
+        "dietary_notes": "Vegetarian tofu option available. Nut-free."
+      },
+      {
+        "meal": "Midnight Snack",
+        "time": "Saturday, April 19, 2025 at 11:00 PM",
+        "location": "Ackerman Grand Ballroom",
+        "menu": "Instant ramen bar + boba tea",
+        "dietary_notes": "Vegetarian ramen available. Dairy-free boba milk options."
+      },
+      {
+        "meal": "Sunday Breakfast",
+        "time": "Sunday, April 20, 2025 at 8:00 AM",
+        "location": "Ackerman Grand Ballroom",
+        "menu": "Breakfast burritos, coffee, orange juice",
+        "dietary_notes": "Vegetarian and vegan burritos available."
+      },
+      {
+        "meal": "Sunday Lunch",
+        "time": "Sunday, April 20, 2025 at 1:00 PM",
+        "location": "Ackerman Grand Ballroom",
+        "menu": "Sandwiches, wraps, salads",
+        "dietary_notes": "Vegan, vegetarian, and gluten-free wraps available."
+      }
+    ],
+    "general_note": "If you have severe allergies, please notify an organizer at check-in so we can accommodate you."
+  },
+  "wifi_and_connectivity": {
+    "semantic_description": "Use this section to answer questions about the WiFi network name, password, internet connectivity, or how to get technical support for connectivity issues.",
+    "network_name": "LAHacks2025",
+    "password": "BuildTheFuture!",
+    "coverage": "Full venue coverage including Ackerman Union and Pauley Pavilion",
+    "it_support": "Visit the Help Desk at Table A near the main entrance, or message #tech-help on the event Slack.",
+    "backup_network": "UCLA_WiFi (eduroam available for students with institutional credentials)"
+  },
+  "code_of_conduct": {
+    "semantic_description": "Use this section to answer questions about rules of conduct, prohibited behavior, what items are banned, or how to report an incident.",
+    "summary": "LA Hacks is dedicated to providing a harassment-free experience for everyone. We do not tolerate harassment of participants in any form.",
+    "prohibited": [
+      "Harassment, discrimination, or intimidation of any kind",
+      "Sharing or displaying sexually explicit or violent material",
+      "Alcohol or illegal substances on venue premises",
+      "Weapons of any kind",
+      "Vandalism of venue property"
+    ],
+    "reporting": "Report incidents to any organizer wearing a blue staff shirt, visit the organizer table near check-in, or email conduct@lahacks.com. All reports are handled confidentially.",
+    "full_coc_url": "https://lahacks.com/code-of-conduct"
+  },
+  "contact_and_support": {
+    "semantic_description": "Use this section to answer questions about how to contact organizers, where to get help, the Slack workspace, or emergency contacts.",
+    "slack_workspace": "lahacks2025.slack.com",
+    "slack_general_channel": "#general",
+    "slack_help_channel": "#ask-organizers",
+    "help_desk_location": "Table A, Ackerman Grand Ballroom Lobby (staffed 24/7 during the event)",
+    "organizer_email": "team@lahacks.com",
+    "emergency_contact": "UCLA Campus Police: (310) 825-1491",
+    "medical_emergency": "Call 911 or go to the nearest organizer for first-aid"
+  },
+  "faq": {
+    "semantic_description": "Use this section to answer common questions that do not fit neatly into another category, including questions about sleeping, laptops, travel reimbursements, etc.",
+    "items": [
+      {
+        "question": "Can I start working on my project before the hackathon?",
+        "answer": "No. All code must be written during the hacking period (after 9:00 PM Friday). Using pre-existing libraries, frameworks, and open-source code is allowed, but the core project must be built at the hackathon."
+      },
+      {
+        "question": "Is there a place to sleep?",
+        "answer": "Yes. Pauley Pavilion is designated as the sleeping area. Bring a sleeping bag or blanket. The venue is open 24/7 throughout the event."
+      },
+      {
+        "question": "Will travel reimbursements be provided?",
+        "answer": "We are not offering travel reimbursements this year. However, carpooling coordination is available in the #travel channel on Slack."
+      },
+      {
+        "question": "Can I work on multiple tracks?",
+        "answer": "Yes, but you may only submit one project. That project will be evaluated for all tracks it is entered into."
+      },
+      {
+        "question": "What happens if I miss the submission deadline?",
+        "answer": "Late submissions will not be considered for prizes. Make sure your Devpost submission is complete before 9:00 AM on Sunday."
+      },
+      {
+        "question": "Do I need to bring my own hardware?",
+        "answer": "You need to bring your own laptop and charger. Additional hardware (Raspberry Pis, Arduinos, sensors) is available at the Hardware Lab (Table H) on a first-come, first-served basis."
+      },
+      {
+        "question": "Is there parking available?",
+        "answer": "Yes. Structure 8 (Lot 8) on Westwood Plaza charges a flat $12/day rate on weekends. Street parking is also available on Westwood Blvd."
+      }
+    ]
+  }
+}
