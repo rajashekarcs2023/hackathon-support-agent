@@ -56,10 +56,6 @@ class _Config:
         return os.getenv("DISCORD_ROLE_ID", "")
 
     @property
-    def DEBUG(self) -> bool:
-        return os.getenv("DEBUG", "").strip() == "1"
-
-    @property
     def LOG_LEVEL(self) -> str:
         return (os.getenv("LOG_LEVEL", "") or "ERROR").strip().upper()
 

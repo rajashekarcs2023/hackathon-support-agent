@@ -7,8 +7,7 @@ from qa_engine.engine import QAEngine
 
 
 def _configure_logging() -> None:
-    level_name = "DEBUG" if config.DEBUG else config.LOG_LEVEL
-    level = getattr(logging, level_name, logging.ERROR)
+    level = getattr(logging, config.LOG_LEVEL, logging.ERROR)
     logging.basicConfig(
         level=level,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
