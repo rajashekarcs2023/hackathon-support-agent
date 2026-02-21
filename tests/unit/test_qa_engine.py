@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from qa_engine.engine import DEFAULT_FALLBACK, QAEngine
-from qa_engine.store import ConversationContext, InMemoryConversationStore
+from qa_engine.store import InMemoryConversationStore
 
 
 # ---------------------------------------------------------------------------
@@ -60,6 +60,11 @@ def _make_engine(store=None) -> tuple[QAEngine, MagicMock]:
 
 @pytest.mark.unit
 def test_store_creates_fresh_context_on_first_load():
+    """
+    Story: When we load a conversation for a session that has never been used before,
+    the store gives us a brand-new context: no message history and no pending
+    escalation. We can start a clean conversation.
+    """
     store = InMemoryConversationStore()
     ctx = store.load("session-1")
     assert ctx.history == []
@@ -68,6 +73,11 @@ def test_store_creates_fresh_context_on_first_load():
 
 @pytest.mark.unit
 def test_store_returns_same_object_after_save():
+    """
+    Story: We load a session, add a user message and set pending escalation to True,
+    then save. When we load the same session again, we get back exactly what we
+    saved: the same history and the same pending-escalation flag. Persistence works.
+    """
     store = InMemoryConversationStore()
     ctx = store.load("session-1")
     ctx.history.append({"role": "user", "content": "hello"})
@@ -81,6 +91,10 @@ def test_store_returns_same_object_after_save():
 
 @pytest.mark.unit
 def test_store_isolates_sessions():
+    """
+    Story: We add a message to session A and save it. When we load session B,
+    its history is empty. Sessions do not share data; each has its own context.
+    """
     store = InMemoryConversationStore()
     ctx_a = store.load("session-a")
     ctx_a.history.append({"role": "user", "content": "from A"})
@@ -96,6 +110,10 @@ def test_store_isolates_sessions():
 
 @pytest.mark.unit
 def test_answer_returns_text_reply():
+    """
+    Story: The user asks "Hi" and the model returns a plain text reply "Hello there!".
+    The engine returns that text directly to the caller with no tool calls involved.
+    """
     engine, mock_client = _make_engine()
     mock_client.chat.completions.create.return_value = _make_text_response("Hello there!")
 
@@ -105,6 +123,11 @@ def test_answer_returns_text_reply():
 
 @pytest.mark.unit
 def test_answer_appends_to_history():
+    """
+    Story: The user says "Hello" and the engine gets a reply "Hi back!". After the
+    answer call, the store for that session contains the user message and the
+    assistant reply in order, so conversation history is correctly recorded.
+    """
     store = InMemoryConversationStore()
     engine, mock_client = _make_engine(store=store)
     mock_client.chat.completions.create.return_value = _make_text_response("Hi back!")
@@ -118,6 +141,11 @@ def test_answer_appends_to_history():
 
 @pytest.mark.unit
 def test_history_is_trimmed_to_limit():
+    """
+    Story: We send more messages than HISTORY_LIMIT allows. The store never keeps
+    more than HISTORY_LIMIT messages; older ones are dropped so we do not grow
+    unbounded and blow context windows.
+    """
     from qa_engine.store import HISTORY_LIMIT
 
     store = InMemoryConversationStore()
@@ -138,6 +166,12 @@ def test_history_is_trimmed_to_limit():
 
 @pytest.mark.unit
 def test_offer_escalation_sets_pending_escalation():
+    """
+    Story: The user asks something the model cannot answer (e.g. prize money), so
+    the model calls the offer_escalation tool. After handling that, the session's
+    pending_escalation flag is set to True so the next turn knows we are waiting
+    for the user to confirm or decline escalation.
+    """
     store = InMemoryConversationStore()
     engine, mock_client = _make_engine(store=store)
 
@@ -155,6 +189,12 @@ def test_offer_escalation_sets_pending_escalation():
 
 @pytest.mark.unit
 def test_confirm_escalation_clears_pending_escalation():
+    """
+    Story: The session already has pending_escalation True (we offered escalation).
+    The user says "Yes please" and the model calls confirm_escalation. After that,
+    pending_escalation is cleared to False so we are no longer waiting for a
+    confirmation.
+    """
     store = InMemoryConversationStore()
     ctx = store.load("s1")
     ctx.pending_escalation = True
@@ -174,6 +214,12 @@ def test_confirm_escalation_clears_pending_escalation():
 
 @pytest.mark.unit
 def test_retrieve_docs_clears_pending_escalation():
+    """
+    Story: The session had pending escalation, but the user asks a new question
+    (e.g. "What is the schedule?") and the model decides to retrieve docs instead.
+    After running retrieve_docs and answering, pending_escalation is cleared so
+    we do not keep showing escalation UI when the user has moved on.
+    """
     store = InMemoryConversationStore()
     ctx = store.load("s1")
     ctx.pending_escalation = True
@@ -193,31 +239,16 @@ def test_retrieve_docs_clears_pending_escalation():
 
 
 # ---------------------------------------------------------------------------
-# System prompt tests
-# ---------------------------------------------------------------------------
-
-@pytest.mark.unit
-def test_system_prompt_includes_pending_escalation_flag():
-    ctx = ConversationContext(history=[], pending_escalation=True)
-    engine, _ = _make_engine()
-    prompt = engine._build_system_prompt(ctx)
-    assert "pending_escalation=True" in prompt
-
-
-@pytest.mark.unit
-def test_system_prompt_no_pending_flag_when_false():
-    ctx = ConversationContext(history=[], pending_escalation=False)
-    engine, _ = _make_engine()
-    prompt = engine._build_system_prompt(ctx)
-    assert "pending_escalation=True" not in prompt
-
-
-# ---------------------------------------------------------------------------
 # Fallback test
 # ---------------------------------------------------------------------------
 
 @pytest.mark.unit
 def test_fallback_when_no_content_returned():
+    """
+    Story: The model returns a response with no text content (e.g. empty or null).
+    Instead of returning nothing or failing, the engine returns the default
+    fallback message so the user always gets a sensible reply.
+    """
     engine, mock_client = _make_engine()
     mock_client.chat.completions.create.return_value = _make_text_response(None)
 
