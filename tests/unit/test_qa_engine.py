@@ -48,7 +48,11 @@ def _make_tool_response(tool_name: str, args: dict, call_id: str = "tc_1") -> Ma
 
 def _make_engine(store=None) -> tuple[QAEngine, MagicMock]:
     """Create a QAEngine with a mocked OpenAI client."""
-    engine = QAEngine(openai_api_key="test-key", store=store)
+    engine = QAEngine(
+        openai_api_key="test-key",
+        knowledge_base_path="hackathonknowledge.json",
+        store=store,
+    )
     mock_client = MagicMock()
     engine._client = mock_client
     return engine, mock_client

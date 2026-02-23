@@ -153,8 +153,18 @@ class QAEngine:
     multi-turn interactions work correctly across calls.
     """
 
-    def __init__(self, openai_api_key: str, store: ConversationStore | None = None):
+    def __init__(
+        self,
+        openai_api_key: str,
+        knowledge_base_path: str | Path | None = None,
+        store: ConversationStore | None = None,
+    ):
         self._client = OpenAI(api_key=openai_api_key)
+        self._knowledge_base_path = (
+            Path(knowledge_base_path)
+            if knowledge_base_path
+            else Path(__file__).parent.parent / "hackathonknowledge.json"
+        )
         self._store = store or InMemoryConversationStore()
 
     def answer(self, message: str, session_id: str = "default") -> str:
@@ -263,8 +273,7 @@ class QAEngine:
         return reply
 
     def _get_knowledge(self) -> dict:
-        knowledge_path = Path(__file__).parent.parent / "hackathonknowledge.json"
-        with open(knowledge_path) as f:
+        with open(self._knowledge_base_path) as f:
             return json.load(f)
 
     @log_tool_call
