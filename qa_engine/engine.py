@@ -260,13 +260,13 @@ class QAEngine:
                     result = self._tool_retrieve_docs(args.get("query", ""), messages)
                     ctx.pending_escalation = False
                 elif tool_name == "offer_escalation":
-                    result = self._tool_offer_escalation(message)
+                    result = self._tool_offer_escalation(ctx)
                     ctx.pending_escalation = True
                     terminal_reply = result
                 elif tool_name == "confirm_escalation":
                     user_msgs = [m["content"] for m in ctx.history if m["role"] == "user"]
                     original = user_msgs[-2] if len(user_msgs) >= 2 else message
-                    result = self._tool_confirm_escalation(original)
+                    result = self._tool_confirm_escalation(original, ctx)
                     ctx.pending_escalation = False
                 else:
                     result = f"Unknown tool: {tool_name}"
@@ -327,20 +327,50 @@ class QAEngine:
         return response.choices[0].message.content or DEFAULT_FALLBACK
 
     @log_tool_call
-    def _tool_offer_escalation(self, question: str) -> str:
-        short = question[:120].rstrip() + ("…" if len(question) > 120 else "")
-        return (
-            f"I wasn't able to find a confident answer to \"{short}\". "
-            "Would you like me to escalate this to a human organizer who can help you directly?"
+    def _tool_offer_escalation(self, ctx: ConversationContext) -> str:
+        response = self._client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a warm, helpful hackathon assistant. Based on this conversation, "
+                        "you were unable to find a confident answer in the knowledge base. "
+                        "Write 1-2 natural, friendly sentences: acknowledge what the user was asking about, "
+                        "let them know you don't have a confident answer, and offer to escalate to a "
+                        "human organizer who can help them directly. Be specific to their question — "
+                        "no generic filler. Do not answer the question itself."
+                    ),
+                },
+                *ctx.history[-HISTORY_LIMIT:],
+            ],
+            max_tokens=150,
+        )
+        return response.choices[0].message.content or (
+            "I don't have a confident answer for that — would you like me to loop in a human organizer?"
         )
 
     @log_tool_call
-    def _tool_confirm_escalation(self, user_message: str) -> str:
+    def _tool_confirm_escalation(self, user_message: str, ctx: ConversationContext) -> str:
         if self._escalation:
             return self._escalation.escalate(user_message)
         logger.info("Escalation confirmed (no handler configured).")
-        short = user_message[:120].rstrip() + ("…" if len(user_message) > 120 else "")
-        return (
-            f"I've escalated your question about \"{short}\" to the hackathon organizers. "
-            "Someone will follow up with you shortly!"
+        response = self._client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a warm, helpful hackathon assistant. The user just agreed to escalate "
+                        "their question and it has been flagged for a human organizer to follow up. "
+                        "Write 1-2 natural, friendly sentences confirming this and reassuring them "
+                        "someone will get back to them. Be specific to what they asked — no generic filler."
+                    ),
+                },
+                *ctx.history[-HISTORY_LIMIT:],
+            ],
+            max_tokens=150,
+        )
+        return response.choices[0].message.content or (
+            "I've passed your question along to the organizers — someone will follow up with you shortly!"
         )
