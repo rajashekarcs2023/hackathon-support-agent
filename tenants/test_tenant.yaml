@@ -2,6 +2,102 @@ tenant_id: test_tenant
 
 agent:
   name: Test Hackathon Helper
+  read_me: |
+    # Test Hackathon Helper (Hackathon Q&A + Organizer Escalation)
+
+    A hackathon support agent that answers participant questions using the event knowledge base (schedule, rules, logistics, judging, prizes, sponsors, workshops, etc.). If I can’t find a confident answer—or if something sounds urgent—I can **offer to escalate to a human organizer via Discord**.
+
+    ---
+
+    ## ✅ What this Agent Can Do
+
+    - **Answer hackathon questions (KB-first, no guessing)**
+      - Schedule: "When is opening ceremony?" "When is dinner?"
+      - Rules/logistics: "Where is check-in?" "What are the submission rules?"
+      - Judging/prizes/sponsors: "What are the prize tracks?" "Which sponsors are here?"
+
+    - **Handle time-sensitive schedule questions**
+      - Uses the current date/time to say whether something is upcoming vs already passed.
+
+    - **Offer organizer escalation when appropriate**
+      - If the knowledge base doesn’t contain the answer
+      - If you need real-time/on-the-ground info (e.g., "food still hasn’t arrived")
+      - If you’re in distress or reporting something urgent (injury, harassment, safety concern, theft, lost item)
+
+    ---
+
+    ## 🆘 Escalation (Discord) — how it works
+
+    - I will **ask for confirmation first** if escalation is needed.
+    - If you reply with something like **"yes" / "please" / "escalate"**, I will post your message to the organizers’ Discord via webhook.
+    - The Discord post will include your message plus the tenant’s configured settings:
+      - `message_prefix`: `[Test Escalation] `
+      - `mention_role_id`: `1474488882165846239` (a role will be pinged)
+
+    ---
+
+    ## ❌ What this Agent Will Not Do
+
+    - Invent answers not present in the knowledge base
+    - Provide general trivia or unrelated chatbot help
+    - Guarantee real-time operational details without escalation
+    - Replace emergency services—if someone is in immediate danger, contact onsite staff/security right away (and I can still escalate to organizers)
+
+    ---
+
+    ## 🗣️ Example Prompts
+
+    | Prompt                                   | What happens |
+    | ---------------------------------------- | ------------ |
+    | "What's the schedule for today?"         | I answer from the knowledge base |
+    | "Where is judging?"                      | I answer from the knowledge base |
+    | "Food hasn’t arrived yet"                | I’ll likely offer escalation |
+    | "I lost my laptop / I feel unsafe"       | I’ll offer escalation immediately |
+    | "Escalate this to an organizer, please"  | If escalation is pending, I confirm and send |
+
+    ---
+
+    ## 🎯 Typical Response Format
+
+    **Answer:**
+
+    ```
+    <A clear answer sourced from the hackathon knowledge base>
+    ```
+
+    **Escalation offer:**
+
+    ```
+    I couldn't find a confident answer to your question.
+    Would you like me to escalate this to a human organizer who can help you directly?
+    ```
+
+    **After you confirm:**
+
+    ```
+    Escalation sent successfully. The organizers have been notified on Discord and will follow up shortly.
+    ```
+
+    ---
+
+    ## 🤝 Use via ASI:One
+
+    You can invoke this agent in ASI:One by mentioning it in your prompt:
+
+    ```
+    @<agent_address> what's the judging rubric?
+    ```
+
+    _(Replace `<agent_address>` with this agent's address. You can find it when the agent starts or in the agent manifest.)_
+
+    ---
+
+    ## 🔌 How It Works (High-level)
+
+    1. Receives your message via the Agent Chat Protocol
+    2. Uses `retrieve_docs` to search the hackathon knowledge base
+    3. If it can’t answer (or it’s urgent), uses `offer_escalation`
+    4. If you confirm, uses `confirm_escalation` to notify organizers via Discord
 
 docs:
   knowledge_base_path: hackathonknowledge.json
