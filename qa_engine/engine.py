@@ -104,7 +104,7 @@ _TOOLS = [
         "function": {
             "name": "offer_escalation",
             "description": (
-                "Offer to escalate to a human organizer. Use this when: "
+                "Offer to escalate to a human organizer. Call this ONCE when: "
                 "(1) you cannot answer from the knowledge base (e.g. retrieve_docs "
                 "reported the info is not there, or the question is in scope but the "
                 "KB has no relevant content) — do NOT suggest 'check their website' or "
@@ -120,7 +120,10 @@ _TOOLS = [
                 "only escalate for live/operational issues (e.g. 'food still hasn't "
                 "arrived', 'I didn't get food'). Never tell the participant to 'ask a "
                 "volunteer' or 'check on-site' — escalate instead so an organizer can "
-                "follow up directly."
+                "follow up directly. "
+                "IMPORTANT: The return value of this tool IS the message to show the "
+                "user. After calling this tool, relay its return value verbatim as your "
+                "final reply. Do NOT call this tool again or call any other tool."
             ),
             "parameters": {
                 "type": "object",
@@ -248,6 +251,7 @@ class QAEngine:
             logger.info("ReAct step %d: model requested tools: %s", step + 1, tool_names)
             messages.append(msg)
 
+            terminal_reply = None
             for tool_call in msg.tool_calls:
                 tool_name = tool_call.function.name
                 args = json.loads(tool_call.function.arguments or "{}")
@@ -258,6 +262,7 @@ class QAEngine:
                 elif tool_name == "offer_escalation":
                     result = self._tool_offer_escalation()
                     ctx.pending_escalation = True
+                    terminal_reply = result
                 elif tool_name == "confirm_escalation":
                     user_msgs = [m["content"] for m in ctx.history if m["role"] == "user"]
                     original = user_msgs[-2] if len(user_msgs) >= 2 else message
@@ -272,7 +277,11 @@ class QAEngine:
                     "content": result,
                 })
 
-        if not msg.tool_calls:
+            if terminal_reply is not None:
+                reply = terminal_reply
+                break
+
+        if not msg.tool_calls or terminal_reply is not None:
             logger.info("ReAct loop finished with reply: %s", _truncate(reply, 150))
         else:
             logger.warning("ReAct loop hit max steps (3); using last reply as fallback")
