@@ -11,14 +11,20 @@ from uagents_core.contrib.protocols.chat import (
     chat_protocol_spec,
 )
 
+from clients.discord import DiscordWebhookClient
+from escalation import DiscordEscalation
 from tenant import load_tenant
 from qa_engine.engine import QAEngine
 
 _tenant = load_tenant(os.environ.get("TENANT_CONFIG", ""))
 
+_discord_client = DiscordWebhookClient(_tenant.discord_webhook_url, _tenant.discord_role_id)
+_discord_escalation = DiscordEscalation(_discord_client)
+
 engine = QAEngine(
     openai_api_key=_tenant.openai_api_key,
     knowledge_base_path=_tenant.knowledge_base_path,
+    escalation=_discord_escalation,
 )
 
 agent = Agent(
