@@ -26,6 +26,7 @@ from zoneinfo import ZoneInfo
 
 from openai import OpenAI
 
+from escalation.base_escalation import BaseEscalation
 from qa_engine.store import (
     HISTORY_LIMIT,
     ConversationContext,
@@ -133,7 +134,12 @@ _TOOLS = [
         "function": {
             "name": "confirm_escalation",
             "description": (
-                "Confirm and execute the escalation after the user has agreed to escalate."
+                "Confirm and execute the escalation after the user has agreed to escalate. "
+                "This notifies the organizers (e.g. via Discord) so they can follow up. "
+                "The tool result will be a plain-English string indicating success or failure. "
+                "Use it to craft a warm, reassuring reply: if it succeeded, confirm the "
+                "escalation was sent and that someone will follow up; if it failed, "
+                "apologise and suggest the user find an organizer directly."
             ),
             "parameters": {
                 "type": "object",
@@ -158,6 +164,7 @@ class QAEngine:
         openai_api_key: str,
         knowledge_base_path: str | Path | None = None,
         store: ConversationStore | None = None,
+        escalation: BaseEscalation | None = None,
     ):
         self._client = OpenAI(api_key=openai_api_key)
         self._knowledge_base_path = (
@@ -166,6 +173,7 @@ class QAEngine:
             else Path(__file__).parent.parent / "hackathonknowledge.json"
         )
         self._store = store or InMemoryConversationStore()
+        self._escalation = escalation
 
     def answer(self, message: str, session_id: str = "default") -> str:
         """Process a user message and return a response.
@@ -251,7 +259,7 @@ class QAEngine:
                     result = self._tool_offer_escalation()
                     ctx.pending_escalation = True
                 elif tool_name == "confirm_escalation":
-                    result = self._tool_confirm_escalation()
+                    result = self._tool_confirm_escalation(message)
                     ctx.pending_escalation = False
                 else:
                     result = f"Unknown tool: {tool_name}"
@@ -312,6 +320,8 @@ class QAEngine:
         return "I couldn't find a confident answer to your question. Would you like me to escalate this to a human organizer who can help you directly?"
 
     @log_tool_call
-    def _tool_confirm_escalation(self) -> str:
-        logger.info("Escalation confirmed by user.")
+    def _tool_confirm_escalation(self, user_message: str) -> str:
+        if self._escalation:
+            return self._escalation.escalate(user_message)
+        logger.info("Escalation confirmed (no handler configured).")
         return "I've escalated your question to the hackathon organizers. Someone will follow up with you shortly!"
