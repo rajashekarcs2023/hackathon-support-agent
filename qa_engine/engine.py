@@ -259,7 +259,9 @@ class QAEngine:
                     result = self._tool_offer_escalation()
                     ctx.pending_escalation = True
                 elif tool_name == "confirm_escalation":
-                    result = self._tool_confirm_escalation(message)
+                    user_msgs = [m["content"] for m in ctx.history if m["role"] == "user"]
+                    original = user_msgs[-2] if len(user_msgs) >= 2 else message
+                    result = self._tool_confirm_escalation(original)
                     ctx.pending_escalation = False
                 else:
                     result = f"Unknown tool: {tool_name}"
