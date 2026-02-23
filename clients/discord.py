@@ -9,9 +9,16 @@ class DiscordWebhookClient:
         self.role_id = role_id
 
     def send(self, message: str):
+        if self.role_id:
+            content = f"<@&{self.role_id}> {message}"
+            allowed_mentions = {"roles": [self.role_id]}
+        else:
+            content = message
+            allowed_mentions = {"parse": []}
+
         webhook = DiscordWebhook(
             url=self.webhook_url,
-            content=f"<@&{self.role_id}> {message}",
-            allowed_mentions={"roles": [self.role_id]},
+            content=content,
+            allowed_mentions=allowed_mentions,
         )
         return webhook.execute()
