@@ -1,0 +1,25 @@
+tenant_id: beachhacks
+
+agent:
+  name: BeachHacks Helper
+  # Optional: surfaced in UIs/docs; safe to keep here.
+  avatar_url: ""
+  # Markdown shown in a tenant "about" panel (optional).
+  readme_markdown: |
+    # BeachHacks Helper
+
+    Ask me anything about BeachHacks: schedule, rules, logistics, judging, prizes, sponsors, and support.
+
+docs:
+  # For now the project uses a single JSON knowledge base file. Per-tenant KBs can
+  # be swapped by changing this path.
+  knowledge_base_path: hackathonknowledge.json
+
+escalation:
+  kind: discord_webhook
+  discord_webhook:
+    # Who to ping (role IDs are not secrets).
+    mention_role_id: ""
+
+    # Non-secret formatting knobs.
+    message_prefix: "[BeachHacks Escalation] "

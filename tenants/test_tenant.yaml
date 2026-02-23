@@ -1,0 +1,13 @@
+tenant_id: test_tenant
+
+agent:
+  name: Test Hackathon Helper
+
+docs:
+  knowledge_base_path: hackathonknowledge.json
+
+escalation:
+  kind: discord_webhook
+  discord_webhook:
+    mention_role_id: ""
+    message_prefix: "[Test Escalation] "

@@ -1,8 +1,9 @@
 """Tenant config loader.
 
-Each tenant has a YAML file under tenants/ that declares non-secret config
-inline and references secret values by env var name. Call load_tenant() with
-the path from the TENANT_CONFIG environment variable.
+Each tenant has a YAML file under tenants/ that declares non-secret config.
+Secrets are read from standard env vars (OPENAI_API_KEY, AGENT_SEED_PHRASE,
+DISCORD_WEBHOOK_URL) — inject the right .env per container. Call load_tenant()
+with the path from the TENANT_CONFIG environment variable.
 
 Usage:
     tenant = load_tenant(os.environ.get("TENANT_CONFIG", ""))
@@ -34,10 +35,10 @@ class TenantConfig:
 def load_tenant(config_path: str) -> TenantConfig:
     """Load and validate a tenant config from a YAML file.
 
-    Secrets are never stored in the YAML; the YAML holds the env var *name*
-    and this function resolves the actual value from the environment. Exits
-    with a clear error message if TENANT_CONFIG is unset, the file is missing,
-    or a referenced env var is not set.
+    Secrets are read from the standard env vars OPENAI_API_KEY,
+    AGENT_SEED_PHRASE, and DISCORD_WEBHOOK_URL — inject the right .env per
+    container. Exits with a clear error message if TENANT_CONFIG is unset,
+    the file is missing, or a required env var is not set.
     """
     if not config_path:
         sys.exit("TENANT_CONFIG environment variable is not set.")
@@ -55,7 +56,6 @@ def load_tenant(config_path: str) -> TenantConfig:
             sys.exit(f"Missing required env var '{key_name}' (referenced in {path})")
         return val
 
-    env = raw.get("env", {})
     esc = raw.get("escalation", {}).get("discord_webhook", {})
     kb_path = raw.get("docs", {}).get("knowledge_base_path", "hackathonknowledge.json")
 
@@ -63,9 +63,9 @@ def load_tenant(config_path: str) -> TenantConfig:
         tenant_id=raw["tenant_id"],
         agent_name=raw.get("agent", {}).get("name", raw["tenant_id"]),
         knowledge_base_path=Path(kb_path),
-        openai_api_key=_env(env["openai_api_key_env_key"]),
-        agent_seed=_env(env["agent_seed_env_key"]),
-        discord_webhook_url=_env(esc["webhook_url_env_key"]),
+        openai_api_key=_env("OPENAI_API_KEY"),
+        agent_seed=_env("AGENT_SEED_PHRASE"),
+        discord_webhook_url=_env("DISCORD_WEBHOOK_URL"),
         discord_role_id=esc.get("mention_role_id", ""),
         escalation_message_prefix=esc.get("message_prefix", ""),
     )
