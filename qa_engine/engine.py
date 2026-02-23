@@ -260,7 +260,7 @@ class QAEngine:
                     result = self._tool_retrieve_docs(args.get("query", ""), messages)
                     ctx.pending_escalation = False
                 elif tool_name == "offer_escalation":
-                    result = self._tool_offer_escalation()
+                    result = self._tool_offer_escalation(message)
                     ctx.pending_escalation = True
                     terminal_reply = result
                 elif tool_name == "confirm_escalation":
@@ -327,12 +327,20 @@ class QAEngine:
         return response.choices[0].message.content or DEFAULT_FALLBACK
 
     @log_tool_call
-    def _tool_offer_escalation(self) -> str:
-        return "I couldn't find a confident answer to your question. Would you like me to escalate this to a human organizer who can help you directly?"
+    def _tool_offer_escalation(self, question: str) -> str:
+        short = question[:120].rstrip() + ("…" if len(question) > 120 else "")
+        return (
+            f"I wasn't able to find a confident answer to \"{short}\". "
+            "Would you like me to escalate this to a human organizer who can help you directly?"
+        )
 
     @log_tool_call
     def _tool_confirm_escalation(self, user_message: str) -> str:
         if self._escalation:
             return self._escalation.escalate(user_message)
         logger.info("Escalation confirmed (no handler configured).")
-        return "I've escalated your question to the hackathon organizers. Someone will follow up with you shortly!"
+        short = user_message[:120].rstrip() + ("…" if len(user_message) > 120 else "")
+        return (
+            f"I've escalated your question about \"{short}\" to the hackathon organizers. "
+            "Someone will follow up with you shortly!"
+        )
