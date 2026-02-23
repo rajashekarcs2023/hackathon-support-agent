@@ -3,6 +3,8 @@
 import logging
 import os
 
+from clients.discord import DiscordWebhookClient
+from escalation import DiscordEscalation
 from tenant import load_tenant
 from qa_engine.engine import QAEngine
 
@@ -19,10 +21,15 @@ def _configure_logging() -> None:
 def main() -> None:
     _configure_logging()
     tenant = load_tenant(os.environ.get("TENANT_CONFIG", ""))
+    discord_client = DiscordWebhookClient(tenant.discord_webhook_url, tenant.discord_role_id)
+    discord_escalation = DiscordEscalation(discord_client)
+
     qa = QAEngine(
         openai_api_key=tenant.openai_api_key,
         knowledge_base_path=tenant.knowledge_base_path,
+        escalation=discord_escalation
     )
+
     print(f"{tenant.agent_name}. Type 'quit' or 'exit' to stop.\n")
     while True:
         try:
