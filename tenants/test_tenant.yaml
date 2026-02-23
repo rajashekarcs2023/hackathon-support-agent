@@ -9,5 +9,5 @@ docs:
 escalation:
   kind: discord_webhook
   discord_webhook:
-    mention_role_id: ""
+    mention_role_id: "1474488882165846239"
     message_prefix: "[Test Escalation] "
