@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from escalation.discord import DiscordWebhookClient
+from clients.discord import DiscordWebhookClient
 
 
 @pytest.mark.integration
