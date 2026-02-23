@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timezone
 from uuid import uuid4
 
@@ -10,14 +11,19 @@ from uagents_core.contrib.protocols.chat import (
     chat_protocol_spec,
 )
 
-from env import config, require_env
+from tenant import load_tenant
 from qa_engine.engine import QAEngine
 
-engine = QAEngine(openai_api_key=config.OPENAI_API_KEY)
+_tenant = load_tenant(os.environ.get("TENANT_CONFIG", ""))
+
+engine = QAEngine(
+    openai_api_key=_tenant.openai_api_key,
+    knowledge_base_path=_tenant.knowledge_base_path,
+)
 
 agent = Agent(
-    name="ASI-agent",
-    seed=config.AGENT_SEED_PHRASE,
+    name=_tenant.agent_name,
+    seed=_tenant.agent_seed,
     port=8001,
     mailbox=True,
     publish_agent_details=True,
@@ -65,5 +71,4 @@ async def handle_ack(ctx: Context, sender: str, msg: ChatAcknowledgement):
 agent.include(protocol, publish_manifest=True)
 
 if __name__ == "__main__":
-    require_env()
     agent.run()

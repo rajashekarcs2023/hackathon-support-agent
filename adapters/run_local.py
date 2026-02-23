@@ -1,13 +1,14 @@
 """Local terminal chatbot: type in the terminal, get QA engine responses."""
 
 import logging
+import os
 
-from env import config, require_env
+from tenant import load_tenant
 from qa_engine.engine import QAEngine
 
 
 def _configure_logging() -> None:
-    level = getattr(logging, config.LOG_LEVEL, logging.ERROR)
+    level = getattr(logging, os.getenv("LOG_LEVEL", "ERROR").upper(), logging.ERROR)
     logging.basicConfig(
         level=level,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -17,9 +18,12 @@ def _configure_logging() -> None:
 
 def main() -> None:
     _configure_logging()
-    require_env()
-    qa = QAEngine(openai_api_key=config.OPENAI_API_KEY)
-    print("Hackathon Q&A bot. Type 'quit' or 'exit' to stop.\n")
+    tenant = load_tenant(os.environ.get("TENANT_CONFIG", ""))
+    qa = QAEngine(
+        openai_api_key=tenant.openai_api_key,
+        knowledge_base_path=tenant.knowledge_base_path,
+    )
+    print(f"{tenant.agent_name}. Type 'quit' or 'exit' to stop.\n")
     while True:
         try:
             user_input = input("You: ").strip()
