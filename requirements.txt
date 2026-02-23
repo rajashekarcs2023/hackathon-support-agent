@@ -1,6 +1,7 @@
 # Top-level dependencies only. Transitive deps are resolved at install time.
 discord-webhook
 python-dotenv
+pyyaml
 openai
 uagents
 pytest
