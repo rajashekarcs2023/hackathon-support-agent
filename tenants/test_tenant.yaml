@@ -1,7 +1,7 @@
 tenant_id: test_tenant
 
 agent:
-  name: Test Hackathon Helper
+  name: Testing Hackathon Helper
   read_me: |
     # Test Hackathon Helper (Hackathon Q&A + Organizer Escalation)
 
@@ -105,5 +105,5 @@ docs:
 escalation:
   kind: discord_webhook
   discord_webhook:
-    mention_role_id: "1474488882165846239"
+    mention_role_id: ""
     message_prefix: "[Test Escalation] "
