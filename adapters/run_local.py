@@ -4,6 +4,8 @@ import logging
 import os
 
 from clients.discord import DiscordWebhookClient
+from clients.discord_bot import DiscordBotClient
+from clients.google_doc import GoogleDocClient
 from escalation import DiscordEscalation
 from tenant import load_tenant
 from qa_engine.engine import QAEngine
@@ -24,10 +26,20 @@ def main() -> None:
     discord_client = DiscordWebhookClient(tenant.discord_webhook_url, tenant.discord_role_id)
     discord_escalation = DiscordEscalation(discord_client)
 
+    faq_client = None
+    if tenant.discord_bot_token and tenant.discord_faq_channel_id:
+        faq_client = DiscordBotClient(tenant.discord_bot_token, tenant.discord_faq_channel_id)
+
+    google_doc_client = None
+    if tenant.google_doc_id:
+        google_doc_client = GoogleDocClient(tenant.google_doc_id)
+
     qa = QAEngine(
         openai_api_key=tenant.openai_api_key,
         knowledge_base_path=tenant.knowledge_base_path,
-        escalation=discord_escalation
+        escalation=discord_escalation,
+        faq_client=faq_client,
+        google_doc_client=google_doc_client,
     )
 
     print(f"{tenant.agent_name}. Type 'quit' or 'exit' to stop.\n")
