@@ -12,6 +12,8 @@ from uagents_core.contrib.protocols.chat import (
 )
 
 from clients.discord import DiscordWebhookClient
+from clients.discord_bot import DiscordBotClient
+from clients.google_doc import GoogleDocClient
 from escalation import DiscordEscalation
 from tenant import load_tenant
 from qa_engine.engine import QAEngine
@@ -21,10 +23,20 @@ _tenant = load_tenant(os.environ.get("TENANT_CONFIG", ""))
 _discord_client = DiscordWebhookClient(_tenant.discord_webhook_url, _tenant.discord_role_id)
 _discord_escalation = DiscordEscalation(_discord_client)
 
+_faq_client = None
+if _tenant.discord_bot_token and _tenant.discord_faq_channel_id:
+    _faq_client = DiscordBotClient(_tenant.discord_bot_token, _tenant.discord_faq_channel_id)
+
+_google_doc_client = None
+if _tenant.google_doc_id:
+    _google_doc_client = GoogleDocClient(_tenant.google_doc_id)
+
 engine = QAEngine(
     openai_api_key=_tenant.openai_api_key,
     knowledge_base_path=_tenant.knowledge_base_path,
     escalation=_discord_escalation,
+    faq_client=_faq_client,
+    google_doc_client=_google_doc_client,
 )
 
 agent = Agent(
