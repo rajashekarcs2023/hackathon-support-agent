@@ -30,6 +30,9 @@ class TenantConfig:
     discord_webhook_url: str
     discord_role_id: str
     escalation_message_prefix: str
+    discord_bot_token: str
+    discord_faq_channel_id: str
+    google_doc_id: str
 
 
 def load_tenant(config_path: str) -> TenantConfig:
@@ -56,6 +59,9 @@ def load_tenant(config_path: str) -> TenantConfig:
             sys.exit(f"Missing required env var '{key_name}' (referenced in {path})")
         return val
 
+    def _opt_env(key_name: str) -> str:
+        return (os.environ.get(key_name) or "").strip()
+
     esc = raw.get("escalation", {}).get("discord_webhook", {})
     kb_path = raw.get("docs", {}).get("knowledge_base_path", "hackathonknowledge.json")
 
@@ -68,4 +74,7 @@ def load_tenant(config_path: str) -> TenantConfig:
         discord_webhook_url=_env("DISCORD_WEBHOOK_URL"),
         discord_role_id=esc.get("mention_role_id", ""),
         escalation_message_prefix=esc.get("message_prefix", ""),
+        discord_bot_token=_opt_env("DISCORD_BOT_TOKEN"),
+        discord_faq_channel_id=_opt_env("DISCORD_FAQ_CHANNEL_ID"),
+        google_doc_id=_opt_env("GOOGLE_DOC_ID"),
     )
