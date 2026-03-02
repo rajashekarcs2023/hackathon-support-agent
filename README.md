@@ -1,69 +1,142 @@
 # Hackathon Q&A Bot
 
-AI-powered Q&A bot for hackathon participants: answers from a knowledge base and can escalate to human organizers when it can’t answer or when someone needs help.
+AI-powered Q&A bot for hackathon participants. Answers questions from three knowledge sources (static KB, live Google Doc, Discord FAQ channel) and can escalate to human organizers when needed.
+
+---
+
+## Features
+
+- **3-source knowledge**: Static JSON KB (baseline) + Google Doc (organizer-updated) + Discord FAQ channel (most recent)
+- **Source priority**: FAQ channel > Google Doc > Knowledge Base — newer sources override older ones on conflicts
+- **Real-time updates**: Google Doc changes picked up within 60 seconds; FAQ channel messages picked up instantly
+- **Smart escalation**: Posts to FAQ channel (no role pings) when the bot can't answer or a hacker needs human help
+- **Multi-turn conversations**: Remembers context across messages per session
 
 ---
 
 ## Architecture
 
-**One entry point.** All handling goes through `QAEngine.answer(message, session_id)` → one reply string. Callers (terminal, uagents, future HTTP) only pass a message and session; they don’t branch or retry.
+**One entry point.** All handling goes through `QAEngine.answer(message, session_id)` → one reply string.
 
 | Layer | Purpose |
 |-------|--------|
-| **Adapters** | How messages get in. `run_local.py` = terminal REPL; `agent.py` = uagents chat protocol. Both call the engine and return its reply. |
-| **QA engine** | Core. ReAct-style loop (OpenAI tool calls): `retrieve_docs`, `offer_escalation`, `confirm_escalation`. Knowledge from a JSON KB today; designed to be swappable. |
-| **Store** | Per-session state. `ConversationStore` protocol (load/save by `session_id`); default is in-memory. Holds history + `pending_escalation` so multi-turn and “offer → confirm” escalation work. |
-| **Escalation** | `DiscordWebhookClient` is a helper for when a hackathon chooses Discord for escalation. Escalation is not wired into the engine yet; that’s intentional. |
+| **Adapters** | How messages get in. `run_local.py` = terminal REPL; `agent.py` = uagents chat protocol. |
+| **QA engine** | Core. ReAct-style loop (OpenAI tool calls): `retrieve_docs`, `offer_escalation`, `confirm_escalation`. |
+| **Clients** | `DiscordBotClient` reads FAQ channel; `GoogleDocClient` fetches hacker guide; `DiscordWebhookClient` sends escalations. |
+| **Store** | Per-session state. `ConversationStore` protocol; default is in-memory. Holds history + `pending_escalation`. |
+| **Escalation** | `DiscordEscalation` posts to FAQ channel via webhook (no role pings). |
 
-**Flow:** User message → adapter → `engine.answer()` → load context → ReAct loop (model may call tools) → save context → reply. Session identity is a string (e.g. `"local"` or uagents `sender`); may become UUID later.
-
-**Patterns:** Single facade (engine); pluggable store (protocol); thin adapters; tool-calling for orchestration.
+**Flow:** User message → adapter → `engine.answer()` → load context → force `retrieve_docs` (KB + Google Doc + FAQ) → ReAct loop → save context → reply.
 
 ---
 
 ## Project layout
 
 ```
-adapters/          # Entry points (local REPL, uagents agent)
-qa_engine/         # Engine + store + tools (retrieve_docs, escalation)
-escalation/        # Discord webhook helper (for future escalation wiring)
-env.py             # Required env vars + config; require_env() at startup
-hackathonknowledge.json   # Current knowledge base (replaceable)
+adapters/              # Entry points (local REPL, uagents agent)
+qa_engine/             # Engine + store + tools
+clients/               # Discord bot, Google Doc, webhook clients
+escalation/            # Escalation handlers (Discord webhook)
+tenants/               # Per-hackathon YAML configs
+hackathonknowledge.json  # Static knowledge base (replaceable per tenant)
 ```
-
-See `RFP_HACKATHON_BOT_CONFIGURATION.md` for what hackathon committees provide and how escalation is intended to work.
 
 ---
 
 ## Setup
 
-1. **Copy env:** `cp .env.example .env` and fill in all required keys (see `env.py`).
-2. **Discord (for escalation path):** Server Settings → Integrations → Webhooks → New Webhook → copy URL. Enable Developer Mode, then right-click the role to ping → Copy Role ID. Put both in `.env`.
-3. **Install:** `pip install -r requirements.txt`
+### 1. Clone & install
+
+```bash
+git clone <repo-url>
+cd hackathon-helper
+pip install -r requirements.txt
+```
+
+### 2. Discord setup
+
+You need **two** Discord integrations — a **webhook** (for sending escalation messages) and a **bot** (for reading FAQ channel messages).
+
+#### Webhook (escalation)
+
+1. Go to your Discord server → **Server Settings → Integrations → Webhooks**
+2. Click **New Webhook** → choose the FAQ channel → **Copy Webhook URL**
+
+#### Bot (FAQ channel reader)
+
+1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
+2. Click **New Application** → give it a name → go to **Bot** tab
+3. Click **Reset Token** → **Copy** the bot token
+4. Under **Privileged Gateway Intents**, enable **Message Content Intent**
+5. Go to **OAuth2 → URL Generator**:
+   - Scopes: `bot`
+   - Bot Permissions: `Read Messages/View Channels`, `Read Message History`
+6. Copy the generated URL → open it in browser → **add bot to your server**
+
+#### Get the FAQ channel ID
+
+1. In Discord, go to **User Settings → Advanced → enable Developer Mode**
+2. Right-click the FAQ channel → **Copy Channel ID**
+
+### 3. Google Doc (optional)
+
+1. Create a Google Doc with your hacker guide / FAQ content
+2. Click **Share → Anyone with the link → Viewer**
+3. Copy the doc ID from the URL: `https://docs.google.com/document/d/{THIS_PART}/edit`
+
+### 4. Environment variables
+
+```bash
+cp .env.example .env
+```
+
+Fill in your `.env`:
+
+```env
+TENANT_CONFIG=tenants/test_tenant.yaml
+OPENAI_API_KEY=sk-...
+AGENT_SEED_PHRASE=your_seed_phrase
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
+DISCORD_BOT_TOKEN=MTIz...
+DISCORD_FAQ_CHANNEL_ID=1234567890
+GOOGLE_DOC_ID=1bZ41pELIJfUPumvPgBmUHprybyVzMv0v7M7UD3Gs5us
+```
+
+### 5. Knowledge base
+
+Edit `hackathonknowledge.json` with your hackathon's info (schedule, venue, rules, prizes, etc.). Each section includes a `semantic_description` field that helps the AI find the right info.
+
+### 6. Tenant config
+
+Edit `tenants/test_tenant.yaml` to customize the agent name, knowledge base path, and escalation settings.
 
 ---
 
 ## Usage
 
-**Terminal chatbot:**
-
-```bash
-python -m adapters.run_local
-```
-
-**uagents agent (chat protocol):**
+**uagents agent (production — connects to ASI:One):**
 
 ```bash
 python -m adapters.agent
 ```
 
-**Discord webhook (helper only; e.g. when you wire escalation):**
+**Terminal chatbot (local testing):**
 
-```python
-from escalation.discord import DiscordWebhookClient
-client = DiscordWebhookClient(webhook_url="...", role_id="...")
-client.send("Something went wrong!")
+```bash
+python -m adapters.run_local
 ```
+
+---
+
+## How knowledge sources work
+
+| Source | Updated how | Cache | Priority |
+|--------|------------|-------|----------|
+| **Knowledge Base** (JSON) | Manual edit of file | Read from disk each query | Lowest (baseline) |
+| **Google Doc** | Edit the doc in Google Docs | Re-fetched every 60 seconds | Medium |
+| **FAQ Channel** | Post messages in Discord | Incremental fetch, in-memory | Highest |
+
+If there's a conflict (e.g., KB says "pizza for lunch" but FAQ channel says "sushi"), the higher-priority source wins.
 
 ---
 
@@ -73,4 +146,4 @@ client.send("Something went wrong!")
 python -m pytest tests/
 ```
 
-Tests don’t need real credentials; webhook calls are mocked.
+Tests don't need real credentials; webhook calls are mocked.
