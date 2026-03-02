@@ -26,6 +26,8 @@ from zoneinfo import ZoneInfo
 
 from openai import OpenAI
 
+from clients.discord_bot import DiscordBotClient
+from clients.google_doc import GoogleDocClient
 from escalation.base_escalation import BaseEscalation
 from qa_engine.store import (
     HISTORY_LIMIT,
@@ -104,23 +106,24 @@ _TOOLS = [
         "function": {
             "name": "offer_escalation",
             "description": (
-                "Offer to escalate to a human organizer. Call this ONCE when: "
-                "(1) you cannot answer from the knowledge base (e.g. retrieve_docs "
-                "reported the info is not there, or the question is in scope but the "
-                "KB has no relevant content) — do NOT suggest 'check their website' or "
-                "'contact the sponsor'; escalate so an organizer can help, OR "
-                "(2) the participant is in distress, upset, or reporting an urgent "
-                "situation (e.g. theft, injury, harassment, lost item, medical issue, "
-                "safety concern) — even if the topic is not a typical Q&A question, OR "
-                "(3) the participant needs real-time or on-the-ground information that "
-                "the static knowledge base cannot reliably provide (e.g. why food is "
-                "late today, where an organizer currently is, live status of an "
-                "event). First answer from the knowledge base when the question is "
-                "about scheduled meal times (when is food, what time is lunch, etc.); "
-                "only escalate for live/operational issues (e.g. 'food still hasn't "
-                "arrived', 'I didn't get food'). Never tell the participant to 'ask a "
-                "volunteer' or 'check on-site' — escalate instead so an organizer can "
-                "follow up directly. "
+                "Offer to escalate to a human organizer. "
+                "PREREQUISITE: You MUST call retrieve_docs FIRST before calling this "
+                "tool — even for distress or urgent situations. retrieve_docs checks "
+                "both the knowledge base AND the live FAQ channel where organizers may "
+                "have already posted guidance. Only call offer_escalation AFTER "
+                "retrieve_docs confirms the information is not available. "
+                "Call this ONLY when retrieve_docs could NOT answer the question — "
+                "the info was not in the KB or FAQ channel. Examples: "
+                "(1) retrieve_docs explicitly said the info is not available, OR "
+                "(2) the participant needs real-time info that retrieve_docs could not "
+                "provide. "
+                "Do NOT call this tool if retrieve_docs already returned useful "
+                "guidance — instead, answer the user directly using retrieve_docs "
+                "result and mention you can also escalate if they need more help. "
+                "Do NOT suggest 'check their website' or 'contact the sponsor'; "
+                "escalate so an organizer can help. "
+                "Never tell the participant to 'ask a volunteer' or 'check on-site' — "
+                "escalate instead so an organizer can follow up directly. "
                 "IMPORTANT: The return value of this tool IS the message to show the "
                 "user. After calling this tool, relay its return value verbatim as your "
                 "final reply. Do NOT call this tool again or call any other tool."
@@ -168,6 +171,8 @@ class QAEngine:
         knowledge_base_path: str | Path | None = None,
         store: ConversationStore | None = None,
         escalation: BaseEscalation | None = None,
+        faq_client: DiscordBotClient | None = None,
+        google_doc_client: GoogleDocClient | None = None,
     ):
         self._client = OpenAI(api_key=openai_api_key)
         self._knowledge_base_path = (
@@ -177,6 +182,8 @@ class QAEngine:
         )
         self._store = store or InMemoryConversationStore()
         self._escalation = escalation
+        self._faq_client = faq_client
+        self._google_doc_client = google_doc_client
 
     def answer(self, message: str, session_id: str = "default") -> str:
         """Process a user message and return a response.
@@ -185,6 +192,13 @@ class QAEngine:
         caller can always use the return value as the reply to show or send.
         Escalation is handled inside this flow.
         """
+        # Guard: skip the entire pipeline for empty / whitespace-only messages
+        if not message or not message.strip():
+            logger.info("Skipping empty message for session %s", session_id)
+            return (
+                "Hi! I'm the hackathon Q&A bot. "
+                "Ask me anything about the event — schedule, rules, prizes, logistics, and more!"
+            )
         ctx = self._store.load(session_id)
         reply = self._run_react(message, ctx)
         self._store.save(session_id, ctx)
@@ -199,19 +213,28 @@ class QAEngine:
             f"Use this when answering time-sensitive questions — for example, if a meal "
             f"or event is already in the past, say so rather than presenting it as upcoming. "
             f"Answer questions about {SCOPE_DESCRIPTION}. "
-            f"If a participant is in distress, upset, or reporting an urgent situation "
-            f"(theft, injury, harassment, safety concern, or anything requiring immediate "
-            f"human attention), call offer_escalation — do NOT redirect them away. "
-            f"For genuinely off-topic questions unrelated to the event or participant "
-            f"wellbeing, politely redirect to hackathon topics. "
-            f"CRITICAL: For any question that could be hackathon- or sponsor-related "
-            f"(including prizes, sponsors, internships, careers, or contact with sponsors), "
-            f"call retrieve_docs first to check the knowledge base. Do not answer from "
-            f"general knowledge — if the knowledge base does not contain the answer, "
-            f"that counts as 'cannot answer': call offer_escalation. Do not suggest the "
-            f"user go elsewhere (e.g. 'check the careers page', 'contact the sponsor') "
-            f"instead of escalating; offer escalation so an organizer can help. "
-            f"Use confirm_escalation when the user agrees to escalate."
+            f"IMPORTANT: When you find a clear answer in the knowledge retrieval result, "
+            f"just answer the question directly. Do NOT offer escalation on every reply. "
+            f"Only mention escalation in these specific cases: "
+            f"(1) The knowledge retrieval result does NOT contain the answer — call offer_escalation. "
+            f"(2) The participant is in distress or reporting an urgent situation "
+            f"(theft, injury, harassment, safety concern, lost item) — share the info you found "
+            f"AND end with 'Would you like me to escalate this to an organizer as well?' "
+            f"(3) The user explicitly asks to escalate. "
+            f"For normal questions like 'what's the schedule?' or 'how do I apply?' where you "
+            f"have a confident answer, just answer. No escalation offer needed. "
+            f"CRITICAL: ALWAYS call retrieve_docs as your FIRST action for ANY question — "
+            f"even if you are unsure whether it is hackathon-related. The knowledge base "
+            f"includes a live Google Doc and FAQ channel that may contain information you "
+            f"cannot predict. Only skip retrieve_docs for clearly casual messages like "
+            f"'hi' or 'thanks'. Do not answer from general knowledge — if retrieve_docs "
+            f"does not contain the answer, that counts as 'cannot answer': call "
+            f"offer_escalation. Do not suggest the user go elsewhere (e.g. 'check the "
+            f"careers page', 'contact the sponsor') instead of escalating; offer "
+            f"escalation so an organizer can help. "
+            f"If the user explicitly asks to escalate or talk to an organizer "
+            f"(e.g. 'I want to escalate', 'connect me to an organizer', 'escalate this'), "
+            f"call confirm_escalation immediately — treat it as confirmed consent to escalate."
         )
         if ctx.pending_escalation:
             base += (
@@ -230,6 +253,23 @@ class QAEngine:
 
         reply = DEFAULT_FALLBACK
         logger.info("ReAct loop starting for user message: %s", _truncate(message, 120))
+
+        # Always run retrieve_docs upfront so the model has KB + FAQ + Google
+        # Doc context before deciding how to respond.
+        # Skip for very short non-question messages (greetings, thanks, etc.)
+        stripped = message.strip().lower().rstrip("!?.")
+        casual = {"hi", "hello", "hey", "thanks", "thank you", "ok", "okay", "bye", "goodbye", "yo", "sup"}
+        if stripped in casual:
+            logger.info("Casual message detected, skipping retrieve_docs")
+            kb_result = None
+        else:
+            kb_result = self._tool_retrieve_docs(message, messages)
+        messages.append({
+            "role": "system",
+            "content": (
+                f"Knowledge retrieval result for the user's message:\n{kb_result}"
+            ),
+        })
 
         for step in range(3):
             logger.info("ReAct step %d: calling model (messages=%d)", step + 1, len(messages))
@@ -295,6 +335,24 @@ class QAEngine:
         with open(self._knowledge_base_path) as f:
             return json.load(f)
 
+    def _get_faq_section(self) -> str:
+        """Fetch FAQ channel messages and format as a knowledge section."""
+        if not self._faq_client:
+            return ""
+        faq_text = self._faq_client.format_as_knowledge()
+        if not faq_text:
+            return ""
+        return f"\n\nFAQ CHANNEL MESSAGES (organizer answers from Discord):\n{faq_text}"
+
+    def _get_google_doc_section(self) -> str:
+        """Fetch Google Doc content and format as a knowledge section."""
+        if not self._google_doc_client:
+            return ""
+        doc_text = self._google_doc_client.get_content()
+        if not doc_text:
+            return ""
+        return f"\n\nHACKER GUIDE (live Google Doc from organizers):\n{doc_text}"
+
     @log_tool_call
     def _tool_retrieve_docs(self, query: str, messages: list[dict]) -> str:
         knowledge = self._get_knowledge()
@@ -315,9 +373,18 @@ class QAEngine:
                         f"{current_time}. "
                         "When answering about meals or schedule, say whether a time has "
                         "already passed or is upcoming based on the current time. "
-                        "If the answer is not present in the knowledge base, say so clearly "
-                        "and do not invent information.\n\n"
+                        "IMPORTANT: You have three knowledge sources listed below in order "
+                        "of recency: (1) HACKATHON KNOWLEDGE BASE — the baseline, "
+                        "(2) HACKER GUIDE — a live Google Doc maintained by organizers that "
+                        "may contain updates or additional info, and (3) FAQ CHANNEL MESSAGES "
+                        "— the most recent organizer answers from Discord. "
+                        "If there is a conflict between sources, the MORE RECENT source wins: "
+                        "FAQ channel > Hacker Guide > Knowledge Base. "
+                        "If the answer is in none of the sources, say so clearly and do not "
+                        "invent information.\n\n"
                         f"HACKATHON KNOWLEDGE BASE:\n{knowledge_text}"
+                        f"{self._get_google_doc_section()}"
+                        f"{self._get_faq_section()}"
                     ),
                 },
                 {"role": "user", "content": query},
