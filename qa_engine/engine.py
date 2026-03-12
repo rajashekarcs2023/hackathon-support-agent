@@ -28,6 +28,7 @@ from openai import OpenAI
 
 from clients.discord_bot import DiscordBotClient
 from clients.google_doc import GoogleDocClient
+from clients.notion import NotionClient
 from escalation.base_escalation import BaseEscalation
 from qa_engine.store import (
     HISTORY_LIMIT,
@@ -173,6 +174,7 @@ class QAEngine:
         escalation: BaseEscalation | None = None,
         faq_client: DiscordBotClient | None = None,
         google_doc_client: GoogleDocClient | None = None,
+        notion_client: NotionClient | None = None,
     ):
         self._client = OpenAI(api_key=openai_api_key)
         self._knowledge_base_path = (
@@ -184,6 +186,7 @@ class QAEngine:
         self._escalation = escalation
         self._faq_client = faq_client
         self._google_doc_client = google_doc_client
+        self._notion_client = notion_client
 
     def answer(self, message: str, session_id: str = "default") -> str:
         """Process a user message and return a response.
@@ -353,6 +356,26 @@ class QAEngine:
             return ""
         return f"\n\nHACKER GUIDE (live Google Doc from organizers):\n{doc_text}"
 
+    def _get_notion_section(self) -> str:
+        """Fetch Notion page content and format as a knowledge section."""
+        if not self._notion_client:
+            return ""
+        doc_text = self._notion_client.get_content()
+        if not doc_text:
+            return ""
+        return f"\n\nHACKER GUIDE (live Notion page from organizers):\n{doc_text}"
+
+    def _get_live_doc_section(self) -> str:
+        """Return the live document section from whichever source is configured.
+
+        Only one live doc source (Google Doc or Notion) should be active per
+        tenant.  If both clients happen to be set, Google Doc takes precedence.
+        """
+        section = self._get_google_doc_section()
+        if section:
+            return section
+        return self._get_notion_section()
+
     @log_tool_call
     def _tool_retrieve_docs(self, query: str, messages: list[dict]) -> str:
         knowledge = self._get_knowledge()
@@ -375,7 +398,7 @@ class QAEngine:
                         "already passed or is upcoming based on the current time. "
                         "IMPORTANT: You have three knowledge sources listed below in order "
                         "of recency: (1) HACKATHON KNOWLEDGE BASE — the baseline, "
-                        "(2) HACKER GUIDE — a live Google Doc maintained by organizers that "
+                        "(2) HACKER GUIDE — a live document maintained by organizers that "
                         "may contain updates or additional info, and (3) FAQ CHANNEL MESSAGES "
                         "— the most recent organizer answers from Discord. "
                         "If there is a conflict between sources, the MORE RECENT source wins: "
@@ -383,7 +406,7 @@ class QAEngine:
                         "If the answer is in none of the sources, say so clearly and do not "
                         "invent information.\n\n"
                         f"HACKATHON KNOWLEDGE BASE:\n{knowledge_text}"
-                        f"{self._get_google_doc_section()}"
+                        f"{self._get_live_doc_section()}"
                         f"{self._get_faq_section()}"
                     ),
                 },
