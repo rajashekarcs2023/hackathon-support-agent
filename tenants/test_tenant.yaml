@@ -101,6 +101,8 @@ agent:
 
 docs:
   knowledge_base_path: hackathonknowledge.json
+  # "google_doc", "notion", or leave blank for no live doc
+  live_source: notion
 
 escalation:
   kind: discord_webhook
