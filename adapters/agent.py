@@ -14,6 +14,7 @@ from uagents_core.contrib.protocols.chat import (
 from clients.discord import DiscordWebhookClient
 from clients.discord_bot import DiscordBotClient
 from clients.google_doc import GoogleDocClient
+from clients.notion import NotionClient
 from escalation import DiscordEscalation
 from tenant import load_tenant
 from qa_engine.engine import QAEngine
@@ -28,8 +29,12 @@ if _tenant.discord_bot_token and _tenant.discord_faq_channel_id:
     _faq_client = DiscordBotClient(_tenant.discord_bot_token, _tenant.discord_faq_channel_id)
 
 _google_doc_client = None
-if _tenant.google_doc_id:
+if _tenant.live_source == "google_doc" and _tenant.google_doc_id:
     _google_doc_client = GoogleDocClient(_tenant.google_doc_id)
+
+_notion_client = None
+if _tenant.live_source == "notion" and _tenant.notion_api_token and _tenant.notion_page_id:
+    _notion_client = NotionClient(_tenant.notion_api_token, _tenant.notion_page_id)
 
 engine = QAEngine(
     openai_api_key=_tenant.openai_api_key,
@@ -37,6 +42,7 @@ engine = QAEngine(
     escalation=_discord_escalation,
     faq_client=_faq_client,
     google_doc_client=_google_doc_client,
+    notion_client=_notion_client,
 )
 
 agent = Agent(
