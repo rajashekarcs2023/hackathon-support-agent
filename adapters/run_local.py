@@ -6,6 +6,7 @@ import os
 from clients.discord import DiscordWebhookClient
 from clients.discord_bot import DiscordBotClient
 from clients.google_doc import GoogleDocClient
+from clients.notion import NotionClient
 from escalation import DiscordEscalation
 from tenant import load_tenant
 from qa_engine.engine import QAEngine
@@ -31,8 +32,12 @@ def main() -> None:
         faq_client = DiscordBotClient(tenant.discord_bot_token, tenant.discord_faq_channel_id)
 
     google_doc_client = None
-    if tenant.google_doc_id:
+    if tenant.live_source == "google_doc" and tenant.google_doc_id:
         google_doc_client = GoogleDocClient(tenant.google_doc_id)
+
+    notion_client = None
+    if tenant.live_source == "notion" and tenant.notion_api_token and tenant.notion_page_id:
+        notion_client = NotionClient(tenant.notion_api_token, tenant.notion_page_id)
 
     qa = QAEngine(
         openai_api_key=tenant.openai_api_key,
@@ -40,6 +45,7 @@ def main() -> None:
         escalation=discord_escalation,
         faq_client=faq_client,
         google_doc_client=google_doc_client,
+        notion_client=notion_client,
     )
 
     print(f"{tenant.agent_name}. Type 'quit' or 'exit' to stop.\n")
