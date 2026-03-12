@@ -94,12 +94,12 @@ Fill in your `.env`:
 
 ```env
 TENANT_CONFIG=tenants/test_tenant.yaml
-OPENAI_API_KEY=sk-...
-AGENT_SEED_PHRASE=your_seed_phrase
-DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
-DISCORD_BOT_TOKEN=MTIz...
-DISCORD_FAQ_CHANNEL_ID=1234567890
-GOOGLE_DOC_ID=1bZ41pELIJfUPumvPgBmUHprybyVzMv0v7M7UD3Gs5us
+OPENAI_API_KEY=
+AGENT_SEED_PHRASE=
+DISCORD_WEBHOOK_URL=
+DISCORD_BOT_TOKEN=
+DISCORD_FAQ_CHANNEL_ID=
+GOOGLE_DOC_ID=
 ```
 
 ### 5. Knowledge base
@@ -147,3 +147,5 @@ python -m pytest tests/
 ```
 
 Tests don't need real credentials; webhook calls are mocked.
+
+
