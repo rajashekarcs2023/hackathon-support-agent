@@ -110,6 +110,8 @@ docs:
   # For now the project uses a single JSON knowledge base file. Per-tenant KBs can
   # be swapped by changing this path.
   knowledge_base_path: hackathonknowledge.json
+  # "google_doc", "notion", or leave blank for no live doc
+  live_source: google_doc
 
 escalation:
   kind: discord_webhook
