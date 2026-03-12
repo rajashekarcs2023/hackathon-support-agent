@@ -33,6 +33,9 @@ class TenantConfig:
     discord_bot_token: str
     discord_faq_channel_id: str
     google_doc_id: str
+    live_source: str  # "google_doc", "notion", or "" (none)
+    notion_api_token: str
+    notion_page_id: str
 
 
 def load_tenant(config_path: str) -> TenantConfig:
@@ -63,7 +66,9 @@ def load_tenant(config_path: str) -> TenantConfig:
         return (os.environ.get(key_name) or "").strip()
 
     esc = raw.get("escalation", {}).get("discord_webhook", {})
-    kb_path = raw.get("docs", {}).get("knowledge_base_path", "hackathonknowledge.json")
+    docs = raw.get("docs", {})
+    kb_path = docs.get("knowledge_base_path", "hackathonknowledge.json")
+    live_source = docs.get("live_source", "").strip().lower()
 
     return TenantConfig(
         tenant_id=raw["tenant_id"],
@@ -77,4 +82,7 @@ def load_tenant(config_path: str) -> TenantConfig:
         discord_bot_token=_opt_env("DISCORD_BOT_TOKEN"),
         discord_faq_channel_id=_opt_env("DISCORD_FAQ_CHANNEL_ID"),
         google_doc_id=_opt_env("GOOGLE_DOC_ID"),
+        live_source=live_source,
+        notion_api_token=_opt_env("NOTION_API_TOKEN"),
+        notion_page_id=_opt_env("NOTION_PAGE_ID"),
     )
